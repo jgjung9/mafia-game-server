@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.env.Environment;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,8 +13,6 @@ class AccountRepositoryTest {
 
     @Autowired
     private AccountRepository accountRepository;
-    @Autowired
-    private Environment environment;
 
     @AfterEach
     void tearDown() {
@@ -36,6 +33,23 @@ class AccountRepositoryTest {
         // then
         assertThat(foundAccount.getUsername()).isEqualTo(username);
         assertThat(foundAccount.getPassword()).isEqualTo(password);
+    }
+
+    @Test
+    @DisplayName("존재하는 유저 아이디 여부를 확인한다")
+    void existsByUsername() throws Exception {
+        // given
+        String username = "testname";
+        String password = "1234";
+        accountRepository.save(createAccount(username, password));
+
+        // when
+        boolean found = accountRepository.existsByUsername(username);
+        boolean notFound = accountRepository.existsByUsername("ffanguo12f");
+
+        // then
+        assertThat(found).isTrue();
+        assertThat(notFound).isFalse();
     }
 
     private Account createAccount(String username, String password) {
