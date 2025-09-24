@@ -4,8 +4,6 @@ import mafia.server.data.common.Const;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -16,17 +14,15 @@ class UserTest {
     void createUser() throws Exception {
         // given
         String nickname = "testnick";
-        LocalDateTime lastLoginAt = LocalDateTime.now();
 
         // when
-        User user = User.create(1L, nickname, lastLoginAt);
+        User user = User.create(1L, nickname);
 
         // then
         assertThat(user.getAccountId()).isEqualTo(1L);
         assertThat(user.getNickname()).isEqualTo(nickname);
         assertThat(user.getLevel()).isEqualTo(1);
         assertThat(user.getExp()).isEqualTo(0);
-        assertThat(user.getLastLoginAt()).isEqualTo(lastLoginAt);
     }
 
     @Test
@@ -39,10 +35,9 @@ class UserTest {
             sb.append("a");
         }
         String nickname = sb.toString();
-        LocalDateTime lastLoginAt = LocalDateTime.now();
 
         // when & then
-        assertThatThrownBy(() -> User.create(1L, nickname, lastLoginAt))
+        assertThatThrownBy(() -> User.create(1L, nickname))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("닉네임 길이는 " + Const.NICKNAME_MIN_LENGTH + "~" + Const.NICKNAME_MAX_LENGTH + " 여야 합니다");
     }
@@ -57,10 +52,9 @@ class UserTest {
             sb.append("a");
         }
         String nickname = sb.toString();
-        LocalDateTime lastLoginAt = LocalDateTime.now();
 
         // when & then
-        assertThatThrownBy(() -> User.create(1L, nickname, lastLoginAt))
+        assertThatThrownBy(() -> User.create(1L, nickname))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("닉네임 길이는 " + Const.NICKNAME_MIN_LENGTH + "~" + Const.NICKNAME_MAX_LENGTH + " 여야 합니다");
     }

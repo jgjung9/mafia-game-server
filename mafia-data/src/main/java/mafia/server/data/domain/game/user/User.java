@@ -39,7 +39,7 @@ public class User extends BaseTimeEntity {
         this.lastLoginAt = lastLoginAt;
     }
 
-    public static User create(Long accountId, String nickname, LocalDateTime lastLoginAt) {
+    public static User create(Long accountId, String nickname) {
         if (nickname.length() < Const.NICKNAME_MIN_LENGTH || nickname.length() > Const.NICKNAME_MAX_LENGTH) {
             throw new IllegalArgumentException(
                     "닉네임 길이는 " + Const.NICKNAME_MIN_LENGTH + "~" + Const.NICKNAME_MAX_LENGTH + " 여야 합니다"
@@ -52,7 +52,6 @@ public class User extends BaseTimeEntity {
                 .level(1)
                 .diamond(0)
                 .exp(0)
-                .lastLoginAt(lastLoginAt)
                 .build();
     }
 }
