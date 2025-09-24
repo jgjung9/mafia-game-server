@@ -31,13 +31,13 @@ public class WebProtocolController {
             produces = {"application/x-protobuf", "application/json"}
     )
     public ResponseEntity<Response> webRpcRequest(WebProtocol.Request request) {
-        log.info("webRpcRequest request={}", request.toString());
+        log.info("webRpcRequest request=\n{}", request.toString());
 
         // 로직 실행
         WebProtocolCommand command = commandManager.getCommand(request);
         Response response = command.execute(request, LocalDateTime.now());
 
-        log.info("webRpcRequest response={}", response);
+        log.info("webRpcRequest response=\n{}", response);
         return ResponseEntity.ok(response);
     }
 }
