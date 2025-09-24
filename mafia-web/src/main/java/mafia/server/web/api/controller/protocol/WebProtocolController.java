@@ -1,4 +1,4 @@
-package mafia.server.web.api.controller;
+package mafia.server.web.api.controller.protocol;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,10 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 
+/**
+ * 게임에서 유저의 행위를 기반으로 한 요청이므로 rest 방식이 아닌 rpc 방식을 이용해 구현
+ */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/web/api")
+@RequestMapping("/rpc")
 public class WebProtocolController {
 
     private final CommandManager commandManager;

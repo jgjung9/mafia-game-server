@@ -1,4 +1,4 @@
-package mafia.server.web.api.controller;
+package mafia.server.web.api.controller.protocol;
 
 import lombok.extern.slf4j.Slf4j;
 import mafia.server.web.WebProtocol.Request;
@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
-@RestControllerAdvice(basePackages = "mafia.server.web.api.controller")
-public class ApiGlobalExceptionHandler {
+@RestControllerAdvice(basePackages = "mafia.server.web.api.controller.protocol")
+public class WebProtocolExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Response> defaultExceptionHandler(Exception e) {
