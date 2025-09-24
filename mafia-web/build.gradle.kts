@@ -21,8 +21,16 @@ repositories {
 
 dependencies {
     implementation(project(":mafia-data"))
-    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+
+    // web
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+
+    // validation
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
+    // security
+    implementation("org.springframework.boot:spring-boot-starter-security")
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
