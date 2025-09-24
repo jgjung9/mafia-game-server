@@ -1,19 +1,23 @@
-package mafia.server.data.domain.game;
+package mafia.server.data.domain.game.user;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@Transactional
 class UserRepositoryTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @AfterEach
+    void tearDown() {
+        userRepository.deleteAllInBatch();
+    }
 
     @Test
     @DisplayName("닉네임을 통해 유저를 찾을 수 있다")
@@ -32,8 +36,8 @@ class UserRepositoryTest {
 
     private User createUser(String nickname) {
         return User.builder()
+                .accountId(1L)
                 .nickname(nickname)
-                .age(1)
                 .build();
     }
 }

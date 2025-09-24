@@ -1,8 +1,14 @@
-package mafia.server.data.domain.game;
+package mafia.server.data.domain.game.user;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import mafia.server.data.common.Const;
 import mafia.server.data.domain.BaseTimeEntity;
+
+import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -14,19 +20,39 @@ public class User extends BaseTimeEntity {
     @Column(name = "user_id")
     private Long id;
 
+    private Long accountId;
     private String nickname;
-    private int age;
+    private String description;
+    private int level;
+    private long exp;
+    private long diamond;
+    private LocalDateTime lastLoginAt;
 
     @Builder
-    private User(String nickname, int age) {
+    public User(Long accountId, String nickname, String description, int level, long exp, long diamond, LocalDateTime lastLoginAt) {
+        this.accountId = accountId;
         this.nickname = nickname;
-        this.age = age;
+        this.description = description;
+        this.level = level;
+        this.exp = exp;
+        this.diamond = diamond;
+        this.lastLoginAt = lastLoginAt;
     }
 
-    public static User create(String nickname, int age) {
+    public static User create(Long accountId, String nickname, LocalDateTime lastLoginAt) {
+        if (nickname.length() < Const.NICKNAME_MIN_LENGTH || nickname.length() > Const.NICKNAME_MAX_LENGTH) {
+            throw new IllegalArgumentException(
+                    "닉네임 길이는 " + Const.NICKNAME_MIN_LENGTH + "~" + Const.NICKNAME_MAX_LENGTH + " 여야 합니다"
+            );
+        }
+
         return User.builder()
+                .accountId(accountId)
                 .nickname(nickname)
-                .age(age)
+                .level(1)
+                .diamond(0)
+                .exp(0)
+                .lastLoginAt(lastLoginAt)
                 .build();
     }
 }

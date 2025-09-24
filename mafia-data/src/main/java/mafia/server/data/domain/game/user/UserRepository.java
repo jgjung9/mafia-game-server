@@ -1,4 +1,4 @@
-package mafia.server.data.domain.game;
+package mafia.server.data.domain.game.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
