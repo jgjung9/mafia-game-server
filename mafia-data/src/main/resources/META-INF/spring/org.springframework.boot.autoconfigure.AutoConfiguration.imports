@@ -1,0 +1,5 @@
+mafia.server.data.config.MafiaDataAuditingConfig
+mafia.server.data.config.AccountDatabaseConfig
+mafia.server.data.config.AdminDatabaseConfig
+mafia.server.data.config.GameDatabaseConfig
+mafia.server.data.config.LogDatabaseConfig

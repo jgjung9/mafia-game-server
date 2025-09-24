@@ -1,0 +1,115 @@
+spring:
+  datasource:
+    account:
+      url: jdbc:h2:mem:account
+      username: sa
+      password:
+      enabled: true
+
+    game:
+      url: jdbc:h2:mem:game
+      username: sa
+      password:
+      enabled: true
+
+    log:
+      url: jdbc:h2:mem:log
+      username: sa
+      password:
+      enabled: true
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 50
+    open-in-view: false
+
+  h2:
+    console:
+      enabled: true
+
+logging:
+  level:
+    mafia.server.data: trace
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    account:
+      url: jdbc:h2:mem:account
+      username: sa
+      password:
+      enabled: true
+
+    game:
+      url: jdbc:h2:mem:game
+      username: sa
+      password:
+      enabled: true
+
+    log:
+      url: jdbc:h2:mem:log
+      username: sa
+      password:
+      enabled: true
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+        default_batch_fetch_size: 50
+    open-in-view: false
+
+logging:
+  level:
+    mafia.server.data: debug
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    account:
+      url: jdbc:h2:mem:account
+      username: sa
+      password:
+      enabled: true
+
+    game:
+      url: jdbc:h2:mem:game
+      username: sa
+      password:
+      enabled: true
+
+    log:
+      url: jdbc:h2:mem:log
+      username: sa
+      password:
+      enabled: true
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: false
+        default_batch_fetch_size: 50
+    open-in-view: false
+
+logging:
+  level:
+    mafia.server.data: info
