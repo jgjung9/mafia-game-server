@@ -1,0 +1,28 @@
+### signup
+POST http://localhost:8080/auth/signup
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "testid1234",
+  "password": "testpassword123"
+}
+
+### login
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "testid1234",
+  "password": "testpassword123"
+}
+
+### refresh
+POST http://localhost:8080/auth/refresh
+Content-Type: application/json
+Accept: application/json
+
+{
+  "refreshToken": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiYWNjb3VudElkIjoxLCJhdXRob3JpdGllcyI6WyJST0xFX1VTRVIiXSwiZXhwIjoxNzYwMDM1NzMxfQ.fMHoI4DQf7nja9SdO3RUsLAe-oDrT7YwKpg_qt9QE0EAuuSrz68hg6T4Df1wetVQAleZj4dVcpvuehPyATSEog"
+}

@@ -1,1 +1,97 @@
 syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option java_package = "mafia.server.web";
+option java_outer_classname = "WebProtocol";
+
+message Request {
+  enum Command {
+    UNKNOWN = 0;
+
+    // 10 ~ 19 유저 관련
+    SIGNUP = 10;
+    CREATE_USER = 11;
+    LOGIN = 12;
+  }
+
+  Command command = 1;
+  string lang = 2;
+
+  oneof body {
+    // 10 ~ 19 유저 관련
+    SignUpReq signup_request = 10;
+    CreateUserReq create_user_request = 11;
+    LoginReq login_request = 12;
+  }
+}
+
+message SignUpReq {
+  string username = 1;
+  string password = 2;
+}
+
+message CreateUserReq {
+  string nickname = 1;
+}
+
+message LoginReq {
+  string username = 1;
+  string password = 2;
+}
+
+message Response {
+  // 요청의 유효성에 대한 결과
+  enum Result {
+    UNKNOWN = 0;
+    SUCCESS = 1;
+    FAILURE = 2;
+  }
+
+  Request.Command command = 1;
+  Result result = 2;
+  string message = 3;
+  google.protobuf.Timestamp timestamp = 4;
+
+  oneof body {
+    // 10 ~ 19 유저 관련
+    SignUpRes signup_res = 10;
+    LoginRes login_res = 11;
+    CreateUserRes create_user_res = 12;
+  }
+}
+
+message SignUpRes {
+  enum SignUpResult {
+    UNKNOWN = 0;
+    SUCCESS = 1;
+    DUPLICATE_USERNAME = 2;
+    INVALID_USERNAME = 3;
+    INVALID_PASSWORD = 4;
+  }
+  SignUpResult signup_result = 1;
+}
+
+message LoginRes {
+  enum LoginResult {
+    UNKNOWN = 0;
+    SUCCESS = 1;
+    USER_NOT_FOUND = 2; // 로그인 자체는 성공 user 생성이 안된 상태 -> CreateUserReq 요청을 통해 생성
+    INVALID_ID_OR_PASSWORD = 3; // 아이디 or 비밀번호 잘못됨
+  }
+  LoginResult login_result = 1;
+
+  // 로그인 결과가 성공인 경우에만 전달
+  string token = 2;
+  string refreshToken = 3;
+}
+
+message CreateUserRes {
+  enum CreateUserResult {
+    UNKNOWN = 0;
+    SUCCESS = 1;
+    DUPLICATE_NICKNAME = 2;
+    INVALID_NICKNAME_LENGTH = 3;
+  }
+  CreateUserResult create_user_result = 1;
+}

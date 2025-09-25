@@ -1,10 +1,13 @@
 package mafia.server.data.domain.account;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import mafia.server.data.common.Const;
+import org.springframework.util.StringUtils;
+
+import java.time.LocalDateTime;
 
 import static lombok.AccessLevel.PROTECTED;
 
@@ -20,14 +23,24 @@ public class Account {
 
     private String username;
     private String password;
+    private LocalDateTime lastLoginAt;
 
     @Builder
-    private Account(String username, String password) {
+    private Account(String username, String password, LocalDateTime lastLoginAt) {
         this.username = username;
         this.password = password;
+        this.lastLoginAt = lastLoginAt;
     }
 
     public static Account create(String username, String password) {
+        if (!StringUtils.hasText(username)
+                || username.length() < Const.ACCOUNT_USERNAME_MIN_LENGTH
+                || username.length() > Const.ACCOUNT_USERNAME_MAX_LENGTH) {
+            throw new IllegalArgumentException(
+                    "게정의 ID 길이는 " + Const.ACCOUNT_USERNAME_MIN_LENGTH + "~" + Const.ACCOUNT_USERNAME_MAX_LENGTH + " 여야 합니다"
+            );
+        }
+
         return Account.builder()
                 .username(username)
                 .password(password)
