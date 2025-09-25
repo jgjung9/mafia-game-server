@@ -1,4 +1,4 @@
-package mafia.server.web.auth.service;
+package mafia.server.web.auth;
 
 import mafia.server.data.domain.account.Account;
 

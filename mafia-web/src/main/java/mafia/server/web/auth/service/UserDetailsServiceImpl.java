@@ -3,6 +3,8 @@ package mafia.server.web.auth.service;
 import lombok.RequiredArgsConstructor;
 import mafia.server.data.domain.account.Account;
 import mafia.server.data.domain.account.AccountRepository;
+import mafia.server.web.auth.AccountDetails;
+import mafia.server.web.auth.AccountDto;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
