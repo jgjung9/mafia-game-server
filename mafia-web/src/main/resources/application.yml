@@ -30,21 +30,30 @@ spring:
 
   h2:
     console:
-      enabled: true
+      enabled: false
+
+jwt:
+  secret_key: d606a53ae647793f00d9e72598d28457dc9c51ad1f84e33dcb74233531515b11
+  #  초 단위로 설정
+  expiration_time: 3600
+  refresh_expiration_time: 1209600
 
 logging:
   level:
     mafia.server.data: trace
-
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  h2:
+    console:
+      enabled: true
 ---
 spring:
   config:
     activate:
       on-profile: dev
-
-  h2:
-    console:
-      enabled: false
 
   datasource:
     account:
@@ -84,10 +93,6 @@ spring:
   config:
     activate:
       on-profile: prod
-
-  h2:
-    console:
-      enabled: false
 
   datasource:
     account:
