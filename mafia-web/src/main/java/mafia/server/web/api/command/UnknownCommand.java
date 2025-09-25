@@ -1,6 +1,7 @@
 package mafia.server.web.api.command;
 
 import mafia.server.web.WebProtocol.Response;
+import mafia.server.web.auth.AccountContext;
 
 import java.time.LocalDateTime;
 
@@ -18,7 +19,7 @@ public class UnknownCommand implements WebProtocolCommand {
     }
 
     @Override
-    public Response execute(Request request, LocalDateTime now) {
+    public Response execute(AccountContext context, Request request, LocalDateTime now) {
         return Response.newBuilder()
                 .setCommand(getCommandType())
                 .setResult(Response.Result.FAILURE)

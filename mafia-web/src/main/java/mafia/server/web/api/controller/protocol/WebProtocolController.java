@@ -2,10 +2,12 @@ package mafia.server.web.api.controller.protocol;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mafia.server.web.WebProtocol;
+import mafia.server.web.WebProtocol.Request;
 import mafia.server.web.WebProtocol.Response;
 import mafia.server.web.api.command.CommandManager;
 import mafia.server.web.api.command.WebProtocolCommand;
+import mafia.server.web.auth.AccountContext;
+import mafia.server.web.auth.annotation.JwtContext;
 import mafia.server.web.common.annotation.ExecutionTime;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,12 +32,12 @@ public class WebProtocolController {
             consumes = {"application/x-protobuf", "application/json"},
             produces = {"application/x-protobuf", "application/json"}
     )
-    public ResponseEntity<Response> webRpcRequest(WebProtocol.Request request) {
-        log.info("webRpcRequest request=\n{}", request.toString());
+    public ResponseEntity<Response> webRpcRequest(@JwtContext AccountContext accountContext, Request request) {
+        log.info("webRpcRequest accountContext={}, request=\n{}", accountContext, request.toString());
 
         // 로직 실행
         WebProtocolCommand command = commandManager.getCommand(request);
-        Response response = command.execute(request, LocalDateTime.now());
+        Response response = command.execute(accountContext, request, LocalDateTime.now());
 
         log.info("webRpcRequest response=\n{}", response);
         return ResponseEntity.ok(response);
