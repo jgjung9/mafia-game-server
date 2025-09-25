@@ -14,7 +14,7 @@ public class ApiGlobalExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BindException.class)
-    public ApiResponse<Void> validationExceptionHandler(BindException e) {
+    public ApiResponse<Void> handleBindException(BindException e) {
         ObjectError objectError = e.getBindingResult().getAllErrors().getFirst();
         log.debug("Request Body Bind Exception: {}", objectError);
         return ApiResponse.badRequest(null, objectError.getDefaultMessage());
@@ -22,7 +22,7 @@ public class ApiGlobalExceptionHandler {
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
-    public ApiResponse<Void> defaultExceptionHandler(Exception e) {
+    public ApiResponse<Void> handleException(Exception e) {
         log.warn("api error occurred", e);
         return ApiResponse.internalServerError(null, "서버에 알 수 없는 예외가 발생했습니다");
     }
