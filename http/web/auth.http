@@ -7,3 +7,13 @@ Accept: application/json
   "username": "testid1234",
   "password": "testpassword123"
 }
+
+### login
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "testid1234",
+  "password": "testpassword123"
+}
