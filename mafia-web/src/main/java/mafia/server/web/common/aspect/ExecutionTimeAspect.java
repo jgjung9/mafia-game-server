@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Aspect
 @Component
-public class ExecutionTimerAspect {
+public class ExecutionTimeAspect {
 
     @Around("@annotation(mafia.server.web.common.annotation.ExecutionTime)")
     public Object doExecutionTimer(ProceedingJoinPoint joinPoint) throws Throwable {
