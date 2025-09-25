@@ -101,4 +101,8 @@ public class JwtProvider {
     public long getExpirationTime() {
         return EXPIRATION_TIME;
     }
+
+    public long getRefreshExpirationTime() {
+        return REFRESH_EXPIRATION_TIME;
+    }
 }

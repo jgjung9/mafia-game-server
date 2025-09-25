@@ -3,6 +3,7 @@ package mafia.server.web.api.controller.auth;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mafia.server.data.infra.redis.service.TokenRedisService;
 import mafia.server.web.api.controller.ApiResponse;
 import mafia.server.web.api.controller.auth.request.LoginRequest;
 import mafia.server.web.api.controller.auth.request.SignupRequest;
@@ -30,6 +31,7 @@ public class AuthController {
     private final AccountService accountService;
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
+    private final TokenRedisService tokenRedisService;
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<Void>> signup(@Valid @RequestBody SignupRequest request) {
@@ -42,8 +44,10 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
         AccountDetails accountDetails = (AccountDetails) authenticate.getPrincipal();
+        String refreshToken = jwtProvider.generateRefreshToken(accountDetails);
+        tokenRedisService.save(accountDetails.getAccountDto().id(), refreshToken, jwtProvider.getRefreshExpirationTime());
         LoginResponse response = new LoginResponse(
-                jwtProvider.generateToken(accountDetails), jwtProvider.generateRefreshToken(accountDetails),
+                jwtProvider.generateToken(accountDetails), refreshToken,
                 jwtProvider.getTokenType(), jwtProvider.getExpirationTime()
         );
         log.debug("loginResponse={}", response);
