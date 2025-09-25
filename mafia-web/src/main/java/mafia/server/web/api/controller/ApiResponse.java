@@ -58,6 +58,14 @@ public class ApiResponse<T> {
         return response(HttpStatus.NOT_FOUND.value(), null, errorCode, message);
     }
 
+    public static <T> ApiResponse<T> unauthorized(String errorCode, String message) {
+        return response(HttpStatus.UNAUTHORIZED.value(), null, errorCode, message);
+    }
+
+    public static <T> ApiResponse<T> forbidden(String errorCode, String message) {
+        return response(HttpStatus.FORBIDDEN.value(), null, errorCode, message);
+    }
+
     public static <T> ApiResponse<T> internalServerError(String errorCode, String message) {
         return response(HttpStatus.INTERNAL_SERVER_ERROR.value(), null, errorCode, message);
     }

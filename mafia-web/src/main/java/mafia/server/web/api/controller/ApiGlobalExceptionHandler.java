@@ -2,6 +2,8 @@ package mafia.server.web.api.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,6 +13,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice(basePackages = "mafia.server.web.api.controller")
 public class ApiGlobalExceptionHandler {
+
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(BadCredentialsException.class)
+    public ApiResponse<Void> handleBadCredentialsException(BadCredentialsException e) {
+        log.debug("Unauthorized: {}", e.getMessage(), e);
+        return ApiResponse.unauthorized(null, "아이디 또는 비밀번호가 잘못되었습니다");
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(AuthenticationException.class)
+    public ApiResponse<Void> handleAuthenticationException(AuthenticationException e) {
+        log.debug("Forbidden: {}", e.getMessage(), e);
+        return ApiResponse.forbidden(null, "접근 권한이 없습니다");
+    }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BindException.class)
