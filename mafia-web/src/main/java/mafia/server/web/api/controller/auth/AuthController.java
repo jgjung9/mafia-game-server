@@ -7,7 +7,11 @@ import mafia.server.data.infra.redis.service.TokenRedisService;
 import mafia.server.web.api.controller.ApiResponse;
 import mafia.server.web.api.controller.auth.request.LoginRequest;
 import mafia.server.web.api.controller.auth.request.SignupRequest;
+import mafia.server.web.api.controller.auth.request.TokenRefreshRequest;
 import mafia.server.web.api.controller.auth.response.LoginResponse;
+import mafia.server.web.api.controller.auth.response.TokenRefreshResponse;
+import mafia.server.web.api.exception.JwtRefreshException;
+import mafia.server.web.auth.AccountContext;
 import mafia.server.web.auth.AccountDetails;
 import mafia.server.web.auth.provider.JwtProvider;
 import mafia.server.web.common.annotation.ExecutionTime;
@@ -16,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,5 +57,28 @@ public class AuthController {
         );
         log.debug("loginResponse={}", response);
         return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenRefreshResponse>> refresh(@RequestBody TokenRefreshRequest request) {
+        if (!jwtProvider.validateToken(request.refreshToken())) {
+            throw new JwtRefreshException("Invalid refresh Token");
+        }
+
+        AccountContext accountContext = jwtProvider.getAccountContextFromToken(request.refreshToken());
+        String redisRefreshToken = tokenRedisService.get(accountContext.accountId());
+        if (!StringUtils.hasText(redisRefreshToken) || !redisRefreshToken.equals(request.refreshToken())) {
+            throw new JwtRefreshException("Invalid refresh Token");
+        }
+
+        String newRefreshToken = jwtProvider.generateRefreshToken(accountContext);
+        tokenRedisService.save(accountContext.accountId(), newRefreshToken, jwtProvider.getRefreshExpirationTime());
+        TokenRefreshResponse response = new TokenRefreshResponse(
+                jwtProvider.generateToken(accountContext), newRefreshToken,
+                jwtProvider.getTokenType(), jwtProvider.getExpirationTime()
+        );
+        log.debug("refreshResponse={}", response);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+
     }
 }

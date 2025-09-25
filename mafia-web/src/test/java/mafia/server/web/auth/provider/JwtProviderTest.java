@@ -38,6 +38,24 @@ class JwtProviderTest {
     }
 
     @Test
+    @DisplayName("AccountContext 를 이용해 토큰을 생성한다")
+    void generateTokenByAccountContext() throws Exception {
+        // given
+        AccountContext accountContext = createAccountContext(1L);
+
+        // when
+        String token = jwtProvider.generateToken(accountContext);
+        String refreshToken = jwtProvider.generateRefreshToken(accountContext);
+
+        // then
+        assertThat(token).isNotEmpty();
+        assertThat(token).hasSizeGreaterThan(128);
+
+        assertThat(refreshToken).isNotEmpty();
+        assertThat(refreshToken).hasSizeGreaterThan(128);
+    }
+
+    @Test
     @DisplayName("생성된 토큰을 검증할 수 있다")
     void validateToken() throws Exception {
         // given
@@ -106,5 +124,9 @@ class JwtProviderTest {
     private AccountDetails createAccountDetails(Long accountId, String username) {
         AccountDto accountDto = new AccountDto(accountId, username, "password1");
         return new AccountDetails(accountDto, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+    }
+
+    private AccountContext createAccountContext(Long accountId) {
+        return new AccountContext(accountId, List.of(new SimpleGrantedAuthority("ROLE_USER")));
     }
 }

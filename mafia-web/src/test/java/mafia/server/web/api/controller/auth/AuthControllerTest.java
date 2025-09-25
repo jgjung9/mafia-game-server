@@ -1,8 +1,11 @@
 package mafia.server.web.api.controller.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import mafia.server.data.infra.redis.service.TokenRedisService;
 import mafia.server.web.api.controller.auth.request.LoginRequest;
 import mafia.server.web.api.controller.auth.request.SignupRequest;
+import mafia.server.web.api.controller.auth.request.TokenRefreshRequest;
+import mafia.server.web.auth.AccountContext;
 import mafia.server.web.auth.AccountDetails;
 import mafia.server.web.auth.AccountDto;
 import mafia.server.web.auth.provider.JwtProvider;
@@ -47,6 +50,8 @@ class AuthControllerTest {
     private AuthenticationManager authenticationManager;
     @MockitoBean
     private JwtProvider jwtProvider;
+    @MockitoBean
+    private TokenRedisService tokenRedisService;
 
     @TestConfiguration
     static class TestSecurityConfiguration {
@@ -157,12 +162,12 @@ class AuthControllerTest {
     @DisplayName("정상적으로 로그인에 성공한다")
     void login() throws Exception {
         // given
+        LoginRequest request = new LoginRequest("test1234", "password123");
         given(authenticationManager.authenticate(any())).willReturn(createTestingAuthentication());
-        given(jwtProvider.generateToken(any())).willReturn("testToken");
-        given(jwtProvider.generateRefreshToken(any())).willReturn("testToken");
+        given(jwtProvider.generateToken(any(AccountDetails.class))).willReturn("testToken");
+        given(jwtProvider.generateRefreshToken(any(AccountDetails.class))).willReturn("testToken");
         given(jwtProvider.getTokenType()).willReturn("Bearer");
         given(jwtProvider.getExpirationTime()).willReturn(3600L);
-        LoginRequest request = new LoginRequest("test1234", "password123");
 
         // when & then
         mockMvc.perform(post("/auth/login")
@@ -251,10 +256,41 @@ class AuthControllerTest {
         ;
     }
 
+    @Test
+    @DisplayName("토큰을 갱신한다")
+    void refresh() throws Exception {
+        // given
+        TokenRefreshRequest request = new TokenRefreshRequest("testRefreshToken");
+        given(tokenRedisService.get(any())).willReturn("testRefreshToken");
+        given(jwtProvider.validateToken(any())).willReturn(true);
+        given(jwtProvider.getAccountContextFromToken(any())).willReturn(createAccountContext());
+        given(jwtProvider.generateToken(any(AccountContext.class))).willReturn("testToken");
+        given(jwtProvider.generateRefreshToken(any(AccountContext.class))).willReturn("testToken");
+        given(jwtProvider.getTokenType()).willReturn("Bearer");
+        given(jwtProvider.getExpirationTime()).willReturn(3600L);
+
+        // when & then
+        mockMvc.perform(post("/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(request))
+                        .accept(MediaType.APPLICATION_JSON_VALUE)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.body.accessToken").value("testToken"))
+                .andExpect(jsonPath("$.body.refreshToken").value("testToken"))
+                .andExpect(jsonPath("$.body.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.body.expiresIn").value(3600))
+        ;
+    }
+
     private Authentication createTestingAuthentication() {
         AccountDto accountDto = new AccountDto(1L, "test1234", "password123");
         AccountDetails accountDetails = new AccountDetails(accountDto, List.of(new SimpleGrantedAuthority("ROLE_USER")));
         return new TestingAuthenticationToken(accountDetails, null, accountDetails.getAuthorities());
     }
 
+    private AccountContext createAccountContext() {
+        return new AccountContext(1L, List.of());
+    }
 }

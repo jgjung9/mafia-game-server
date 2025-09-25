@@ -41,9 +41,18 @@ public class JwtProvider {
         return generateToken(accountDetails, false);
     }
 
+    public String generateToken(AccountContext accountContext) {
+        return generateToken(accountContext, false);
+    }
+
     public String generateRefreshToken(AccountDetails accountDetails) {
         return generateToken(accountDetails, true);
     }
+
+    public String generateRefreshToken(AccountContext accountContext) {
+        return generateToken(accountContext, true);
+    }
+
 
     public boolean validateToken(String token) {
         try {
@@ -75,6 +84,19 @@ public class JwtProvider {
                 .claim("accountId", accountDto.id())
                 .claim(
                         "authorities", accountDetails.getAuthorities().stream()
+                                .map(GrantedAuthority::getAuthority).toList()
+                )
+                .signWith(JWT_SECRET_KEY)
+                .expiration(createExpiration(isRefresh ? REFRESH_EXPIRATION_TIME : EXPIRATION_TIME))
+                .compact();
+    }
+
+    private String generateToken(AccountContext accountContext, boolean isRefresh) {
+        return Jwts.builder()
+                .subject(String.valueOf(accountContext.accountId()))
+                .claim("accountId", accountContext.accountId())
+                .claim(
+                        "authorities", accountContext.authorities().stream()
                                 .map(GrantedAuthority::getAuthority).toList()
                 )
                 .signWith(JWT_SECRET_KEY)

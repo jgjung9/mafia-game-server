@@ -1,6 +1,7 @@
 package mafia.server.web.api.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import mafia.server.web.api.exception.JwtRefreshException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -34,6 +35,13 @@ public class ApiGlobalExceptionHandler {
         ObjectError objectError = e.getBindingResult().getAllErrors().getFirst();
         log.debug("Request Body Bind Exception: {}", objectError);
         return ApiResponse.badRequest(null, objectError.getDefaultMessage());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(JwtRefreshException.class)
+    public ApiResponse<Void> handleJwtRefreshException(JwtRefreshException e) {
+        log.debug("Invalid token refresh request: {}", e.getMessage());
+        return ApiResponse.badRequest(null, "잘못된 토큰 갱신 요청입니다");
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
