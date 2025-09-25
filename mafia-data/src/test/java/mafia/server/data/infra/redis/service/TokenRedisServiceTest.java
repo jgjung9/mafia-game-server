@@ -56,7 +56,7 @@ class TokenRedisServiceTest {
         tokenRedisService.save(accountId, "testToken", 100);
 
         // then
-        String token = redisTemplate.opsForValue().get(tokenRedisService.getKeyStartWith() + accountId);
+        String token = redisTemplate.opsForValue().get(tokenRedisService.getKey(accountId));
         assertThat(token).isEqualTo("testToken");
     }
 
@@ -68,10 +68,27 @@ class TokenRedisServiceTest {
 
         // when
         redisTemplate.opsForValue()
-                .set(tokenRedisService.getKeyStartWith() + accountId, "testToken", Duration.ofSeconds(100));
+                .set(tokenRedisService.getKey(accountId), "testToken", Duration.ofSeconds(100));
 
         // then
         String token = tokenRedisService.get(accountId);
         assertThat(token).isEqualTo("testToken");
+    }
+
+    @Test
+    @DisplayName("리프레시 토큰을 삭제한다")
+    void delete() throws Exception {
+        // given
+        Long accountId = 1L;
+        redisTemplate.opsForValue()
+                .set(tokenRedisService.getKey(accountId), "testToken", Duration.ofSeconds(100));
+
+        // when
+        tokenRedisService.delete(accountId);
+
+        // then
+        String token = redisTemplate.opsForValue()
+                .get(tokenRedisService.getKey(accountId));
+        assertThat(token).isNull();
     }
 }

@@ -13,15 +13,20 @@ public class TokenRedisService {
 
     public void save(Long accountId, String token, long ttl) {
         redisTemplate.opsForValue()
-                .set(KEY_STARTS_WITH + accountId, token, Duration.ofSeconds(ttl));
+                .set(getKey(accountId), token, Duration.ofSeconds(ttl));
     }
 
     public String get(Long accountId) {
         return redisTemplate.opsForValue()
-                .get(KEY_STARTS_WITH + accountId);
+                .get(getKey(accountId));
     }
 
-    public String getKeyStartWith() {
-        return KEY_STARTS_WITH;
+    public void delete(Long accountId) {
+        redisTemplate.opsForValue()
+                .getAndDelete(getKey(accountId));
+    }
+
+    public String getKey(Long accountId) {
+        return KEY_STARTS_WITH + accountId;
     }
 }
