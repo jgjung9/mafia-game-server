@@ -22,6 +22,7 @@ import java.util.List;
 @Component
 public class JwtProvider {
 
+    private final String TOKEN_TYPE = "Bearer";
     private final SecretKey JWT_SECRET_KEY;
     private final long EXPIRATION_TIME;
     private final long REFRESH_EXPIRATION_TIME;
@@ -91,5 +92,13 @@ public class JwtProvider {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    public String getTokenType() {
+        return TOKEN_TYPE;
+    }
+
+    public long getExpirationTime() {
+        return EXPIRATION_TIME;
     }
 }
