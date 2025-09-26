@@ -3,6 +3,7 @@ package mafia.server.web.api.controller;
 import lombok.extern.slf4j.Slf4j;
 import mafia.server.web.api.exception.JwtRefreshException;
 import mafia.server.web.common.exception.MafiaServiceException;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
+@Order(2)
 @RestControllerAdvice(basePackages = "mafia.server.web.api.controller")
 public class ApiGlobalExceptionHandler {
 
