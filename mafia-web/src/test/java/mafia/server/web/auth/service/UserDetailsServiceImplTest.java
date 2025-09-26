@@ -2,6 +2,7 @@ package mafia.server.web.auth.service;
 
 import mafia.server.data.domain.account.Account;
 import mafia.server.data.domain.account.AccountRepository;
+import mafia.server.data.domain.account.AccountStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,7 @@ class UserDetailsServiceImplTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 아이를 요청시 예외가 발생한다")
+    @DisplayName("존재하지 않는 아이디를 요청시 예외가 발생한다")
     void loadUserByUsername_shouldThrowExceptionIfNotExistsUsername() throws Exception {
         // given
         String username = "testname1";
@@ -57,6 +58,7 @@ class UserDetailsServiceImplTest {
         return Account.builder()
                 .username(username)
                 .password("testpass123")
+                .status(AccountStatus.ACTIVE)
                 .build();
     }
 }

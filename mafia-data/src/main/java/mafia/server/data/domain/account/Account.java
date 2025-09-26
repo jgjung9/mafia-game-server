@@ -23,12 +23,17 @@ public class Account {
 
     private String username;
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    private AccountStatus status;
+
     private LocalDateTime lastLoginAt;
 
     @Builder
-    private Account(String username, String password, LocalDateTime lastLoginAt) {
+    private Account(String username, String password, AccountStatus status, LocalDateTime lastLoginAt) {
         this.username = username;
         this.password = password;
+        this.status = status;
         this.lastLoginAt = lastLoginAt;
     }
 
@@ -44,6 +49,7 @@ public class Account {
         return Account.builder()
                 .username(username)
                 .password(password)
+                .status(AccountStatus.ACTIVE)
                 .build();
     }
 }

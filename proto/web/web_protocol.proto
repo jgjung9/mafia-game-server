@@ -10,9 +10,8 @@ message Request {
     UNKNOWN = 0;
 
     // 10 ~ 19 유저 관련
-    SIGNUP = 10;
-    CREATE_USER = 11;
-    LOGIN = 12;
+    USER_CREATE = 10;
+    USER_GET_INFO = 11;
   }
 
   Command command = 1;
@@ -20,24 +19,17 @@ message Request {
 
   oneof body {
     // 10 ~ 19 유저 관련
-    SignUpReq signup_request = 10;
-    CreateUserReq create_user_request = 11;
-    LoginReq login_request = 12;
+    UserCreateReq user_create_req = 10;
+    UserGetInfoReq user_get_info_req = 11;
   }
 }
 
-message SignUpReq {
-  string username = 1;
-  string password = 2;
-}
-
-message CreateUserReq {
+message UserCreateReq {
   string nickname = 1;
 }
 
-message LoginReq {
-  string username = 1;
-  string password = 2;
+message UserGetInfoReq {
+
 }
 
 message Response {
@@ -55,43 +47,27 @@ message Response {
 
   oneof body {
     // 10 ~ 19 유저 관련
-    SignUpRes signup_res = 10;
-    LoginRes login_res = 11;
-    CreateUserRes create_user_res = 12;
+    UserCreateRes user_create_res = 10;
+    UserGetInfoRes user_get_info_res = 11;
   }
 }
 
-message SignUpRes {
-  enum SignUpResult {
+message UserCreateRes {
+  enum UserCreateResult {
     UNKNOWN = 0;
     SUCCESS = 1;
-    DUPLICATE_USERNAME = 2;
-    INVALID_USERNAME = 3;
-    INVALID_PASSWORD = 4;
+    EXISTS_USER = 2; // 이미 해당 계정의 유저가 있는 경우
+    EXISTS_NICKNAME = 3;
+    INVALID_NICKNAME = 4;
   }
-  SignUpResult signup_result = 1;
+  UserCreateResult user_create_result = 1;
 }
 
-message LoginRes {
-  enum LoginResult {
+message UserGetInfoRes {
+  enum UserGetInfoResult {
     UNKNOWN = 0;
     SUCCESS = 1;
-    USER_NOT_FOUND = 2; // 로그인 자체는 성공 user 생성이 안된 상태 -> CreateUserReq 요청을 통해 생성
-    INVALID_ID_OR_PASSWORD = 3; // 아이디 or 비밀번호 잘못됨
+    USER_NOT_FOUND = 2; // USER_CREATE 요청 필요
   }
-  LoginResult login_result = 1;
-
-  // 로그인 결과가 성공인 경우에만 전달
-  string token = 2;
-  string refreshToken = 3;
-}
-
-message CreateUserRes {
-  enum CreateUserResult {
-    UNKNOWN = 0;
-    SUCCESS = 1;
-    DUPLICATE_NICKNAME = 2;
-    INVALID_NICKNAME_LENGTH = 3;
-  }
-  CreateUserResult create_user_result = 1;
+  UserGetInfoResult user_get_info_result = 1;
 }

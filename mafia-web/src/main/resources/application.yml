@@ -47,7 +47,7 @@ jwt:
 
 logging:
   level:
-    mafia.server.data: trace
+    mafia.server: trace
 ---
 spring:
   config:
@@ -93,7 +93,7 @@ spring:
 
 logging:
   level:
-    mafia.server.data: debug
+    mafia.server: debug
 
 ---
 spring:
@@ -132,4 +132,4 @@ spring:
 
 logging:
   level:
-    mafia.server.data: info
+    mafia.server: info

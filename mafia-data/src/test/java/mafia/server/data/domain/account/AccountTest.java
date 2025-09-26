@@ -23,6 +23,7 @@ class AccountTest {
         // then
         assertThat(account.getUsername()).isEqualTo(username);
         assertThat(account.getPassword()).isEqualTo(password);
+        assertThat(account.getStatus()).isEqualTo(AccountStatus.ACTIVE);
     }
 
     @Test

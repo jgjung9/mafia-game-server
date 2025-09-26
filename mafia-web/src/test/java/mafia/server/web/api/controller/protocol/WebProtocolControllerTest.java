@@ -1,12 +1,16 @@
 package mafia.server.web.api.controller.protocol;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.util.JsonFormat;
+import mafia.server.data.domain.account.Account;
+import mafia.server.data.domain.account.AccountStatus;
 import mafia.server.web.WebProtocol.Request;
 import mafia.server.web.api.command.CommandManager;
 import mafia.server.web.api.command.UnknownCommand;
 import mafia.server.web.auth.AccountContext;
 import mafia.server.web.auth.filter.JwtAuthenticationFilter;
 import mafia.server.web.auth.provider.JwtProvider;
+import mafia.server.web.service.account.AccountService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,16 +44,22 @@ class WebProtocolControllerTest {
     private JwtProvider jwtProvider;
     @MockitoBean
     private CommandManager commandManager;
+    @MockitoBean
+    private AccountService accountService;
 
     @TestConfiguration
     static class TestSecurityConfiguration implements WebMvcConfigurer {
+
+        @Autowired
+        private ObjectMapper objectMapper;
+
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
             http
                     .authorizeHttpRequests(auth -> auth
                             .requestMatchers("/rpc").authenticated()
                     )
-                    .addFilterBefore(new JwtAuthenticationFilter(jwtProvider()), UsernamePasswordAuthenticationFilter.class)
+                    .addFilterBefore(new JwtAuthenticationFilter(jwtProvider(), objectMapper), UsernamePasswordAuthenticationFilter.class)
                     .csrf(AbstractHttpConfigurer::disable)
                     .formLogin(AbstractHttpConfigurer::disable)
                     .httpBasic(AbstractHttpConfigurer::disable)
@@ -76,6 +86,7 @@ class WebProtocolControllerTest {
                 .setCommand(Request.Command.UNKNOWN)
                 .build();
         given(commandManager.getCommand(any())).willReturn(new UnknownCommand());
+        given(accountService.findById(any())).willReturn(createAccount());
 
         // when & then
         mockMvc.perform(post("/rpc")
@@ -98,6 +109,7 @@ class WebProtocolControllerTest {
                 .setCommand(Request.Command.UNKNOWN)
                 .build();
         given(commandManager.getCommand(any())).willReturn(new UnknownCommand());
+        given(accountService.findById(any())).willReturn(createAccount());
 
         // when & then
         mockMvc.perform(post("/rpc")
@@ -106,11 +118,17 @@ class WebProtocolControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
-                .andExpect(status().isForbidden())
+                .andExpect(status().isUnauthorized())
         ;
     }
 
     private AccountContext createAccountContext() {
         return new AccountContext(1L, List.of());
+    }
+
+    private Account createAccount() {
+        return Account.builder()
+                .status(AccountStatus.ACTIVE)
+                .build();
     }
 }
