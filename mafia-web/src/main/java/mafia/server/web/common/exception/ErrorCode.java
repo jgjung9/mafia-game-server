@@ -10,7 +10,18 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum ErrorCode {
-    ACCOUNT_EXISTS("AUTH-001", "이미 존재하는 유저");
+    ACCOUNT_EXISTS("ACCOUNT-001", "이미 존재하는 유저"),
+    ACCOUNT_NOT_FOUND("ACCOUNT-002", "존재하지 않는 계정입니다"),
+    ACCOUNT_INVALID("ACCOUNT-003", "유효하지 않은 계정입니다"),
+
+
+    // 계정 상태 관련
+    ACCOUNT_INVALID_STATUS("ACCOUNT-010", "잘못된 계정 상태값입니다"),
+    ACCOUNT_DELETED("ACCOUNT-011", "관리자에 의해 삭제된 계정입니다"),
+    ACCOUNT_SUSPEND("ACCOUNT-012", "정지된 계정입니다"),
+    ACCOUNT_WITHDRAWN("ACCOUNT-013", "탈퇴된 계정입니다"),
+    ACCOUNT_DORMANT("ACCOUNT-014", "휴먼 계정입니다");
+
 
     private final String code;
     private final String msgKey;
