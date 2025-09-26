@@ -5,9 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import mafia.server.web.WebProtocol.Request;
 import mafia.server.web.WebProtocol.Response;
 import mafia.server.web.common.exception.MafiaServiceException;
+import mafia.server.web.common.protobuf.ProtobufUtils;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.LocalDateTime;
 
 @Slf4j
 @Order(1)
@@ -22,6 +25,7 @@ public class WebProtocolExceptionHandler {
                 .setCommand(request.getCommand())
                 .setResult(Response.Result.FAILURE)
                 .setMessage(e.getMessage())
+                .setTimestamp(ProtobufUtils.toTimestamp(LocalDateTime.now()))
                 .build();
     }
 
@@ -33,6 +37,7 @@ public class WebProtocolExceptionHandler {
                 .setCommand(request.getCommand())
                 .setResult(Response.Result.FAILURE)
                 .setMessage("internal server error")
+                .setTimestamp(ProtobufUtils.toTimestamp(LocalDateTime.now()))
                 .build();
     }
 }
