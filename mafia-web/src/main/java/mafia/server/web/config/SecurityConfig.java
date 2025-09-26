@@ -1,5 +1,6 @@
 package mafia.server.web.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import mafia.server.web.auth.filter.JwtAuthenticationFilter;
 import mafia.server.web.auth.provider.JwtProvider;
@@ -28,6 +29,7 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -36,7 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**", "/webapp/**", "/css/**", "/js/**", "/favicon.*").permitAll()
                         .requestMatchers("/rpc").authenticated()
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, objectMapper), UsernamePasswordAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)

@@ -1,5 +1,6 @@
 package mafia.server.web.api.controller.protocol;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.util.JsonFormat;
 import mafia.server.web.WebProtocol.Request;
 import mafia.server.web.api.command.CommandManager;
@@ -43,13 +44,17 @@ class WebProtocolControllerTest {
 
     @TestConfiguration
     static class TestSecurityConfiguration implements WebMvcConfigurer {
+
+        @Autowired
+        private ObjectMapper objectMapper;
+
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
             http
                     .authorizeHttpRequests(auth -> auth
                             .requestMatchers("/rpc").authenticated()
                     )
-                    .addFilterBefore(new JwtAuthenticationFilter(jwtProvider()), UsernamePasswordAuthenticationFilter.class)
+                    .addFilterBefore(new JwtAuthenticationFilter(jwtProvider(), objectMapper), UsernamePasswordAuthenticationFilter.class)
                     .csrf(AbstractHttpConfigurer::disable)
                     .formLogin(AbstractHttpConfigurer::disable)
                     .httpBasic(AbstractHttpConfigurer::disable)
@@ -106,7 +111,7 @@ class WebProtocolControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
-                .andExpect(status().isForbidden())
+                .andExpect(status().isUnauthorized())
         ;
     }
 
