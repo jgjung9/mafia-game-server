@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -32,11 +33,27 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    @Order(1)
+    public SecurityFilterChain permittedFilterChain(HttpSecurity http) throws Exception {
         http
+                .securityMatcher("/auth/**", "/webapp/**", "/css/**", "/js/**", "/favicon.*", "/h2-console/**")
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/webapp/**", "/css/**", "/js/**", "/favicon.*").permitAll()
-                        .requestMatchers("/rpc").authenticated()
+                        .anyRequest().permitAll()
+                )
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+        ;
+        return http.build();
+    }
+
+    @Bean
+    @Order(2)
+    public SecurityFilterChain authorizedFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/rpc")
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, objectMapper), UsernamePasswordAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
