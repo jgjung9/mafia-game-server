@@ -18,6 +18,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,6 +27,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
     private final ObjectMapper objectMapper;
+    private final List<String> permittedUris = List.of("/auth/", "/webapp/", "/css/", "/js/", "/favicon.");
+
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String requestURI = request.getRequestURI();
+        return permittedUris.stream()
+                .anyMatch(requestURI::startsWith);
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -50,6 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // request 추후 요청 측 정보 로깅이 필요하면 사용
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.getWriter()
                 .write(objectMapper.writeValueAsString(
                         ApiResponse.unauthorized(null, "유효하지 않은 토큰입니다. 재로그인 하거나, 토큰을 리프레시 하세요")
