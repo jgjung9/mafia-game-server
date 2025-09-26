@@ -2,6 +2,7 @@ package mafia.server.web.auth.service;
 
 import mafia.server.data.domain.account.Account;
 import mafia.server.data.domain.account.AccountRepository;
+import mafia.server.data.domain.account.AccountStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -57,6 +58,7 @@ class UserDetailsServiceImplTest {
         return Account.builder()
                 .username(username)
                 .password("testpass123")
+                .status(AccountStatus.ACTIVE)
                 .build();
     }
 }
