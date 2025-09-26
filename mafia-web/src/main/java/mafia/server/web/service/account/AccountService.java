@@ -26,4 +26,9 @@ public class AccountService {
         return accountRepository.save(Account.create(username, passwordEncoder.encode(password)))
                 .getId();
     }
+
+    public Account findById(Long accountId) {
+        return accountRepository.findById(accountId)
+                .orElseThrow(() -> new MafiaServiceException("존재하지 않는 계정입니다", ErrorCode.ACCOUNT_NOT_FOUND));
+    }
 }
