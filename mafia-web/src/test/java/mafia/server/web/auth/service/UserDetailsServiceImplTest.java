@@ -42,7 +42,7 @@ class UserDetailsServiceImplTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 아이를 요청시 예외가 발생한다")
+    @DisplayName("존재하지 않는 아이디를 요청시 예외가 발생한다")
     void loadUserByUsername_shouldThrowExceptionIfNotExistsUsername() throws Exception {
         // given
         String username = "testname1";
