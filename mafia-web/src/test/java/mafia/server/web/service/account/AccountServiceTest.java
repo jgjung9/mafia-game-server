@@ -2,6 +2,7 @@ package mafia.server.web.service.account;
 
 import mafia.server.data.domain.account.Account;
 import mafia.server.data.domain.account.AccountRepository;
+import mafia.server.web.common.exception.MafiaServiceException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,7 +55,7 @@ class AccountServiceTest {
 
         // when & then
         assertThatThrownBy(() -> accountService.createAccount(username, "testpass123"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(MafiaServiceException.class)
                 .hasMessage("이미 존재하는 유저 ID 입니다");
     }
 

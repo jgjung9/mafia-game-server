@@ -2,6 +2,7 @@ package mafia.server.web.api.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import mafia.server.web.api.exception.JwtRefreshException;
+import mafia.server.web.common.exception.MafiaServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -42,6 +43,13 @@ public class ApiGlobalExceptionHandler {
     public ApiResponse<Void> handleJwtRefreshException(JwtRefreshException e) {
         log.debug("Invalid token refresh request: {}", e.getMessage());
         return ApiResponse.badRequest(null, "잘못된 토큰 갱신 요청입니다");
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MafiaServiceException.class)
+    public ApiResponse<Void> handleMafiaServiceException(MafiaServiceException e) {
+        log.debug("MafiaServiceException: {}", e.getMessage());
+        return ApiResponse.badRequest(null, e.getErrorCode().getMsgKey());
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
