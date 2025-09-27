@@ -39,12 +39,13 @@ public static partial class WebProtocolReflection {
           "ZVJlcxI7ChJ1c2VyX2NyZWF0ZV9yZXN1bHQYASABKA4yHy5Vc2VyQ3JlYXRl",
           "UmVzLlVzZXJDcmVhdGVSZXN1bHQiaAoQVXNlckNyZWF0ZVJlc3VsdBILCgdV",
           "TktOT1dOEAASCwoHU1VDQ0VTUxABEg8KC0VYSVNUU19VU0VSEAISEwoPRVhJ",
-          "U1RTX05JQ0tOQU1FEAMSFAoQSU5WQUxJRF9OSUNLTkFNRRAEIpQBCg5Vc2Vy",
+          "U1RTX05JQ0tOQU1FEAMSFAoQSU5WQUxJRF9OSUNLTkFNRRAEIsIBCg5Vc2Vy",
           "R2V0SW5mb1JlcxI/ChR1c2VyX2dldF9pbmZvX3Jlc3VsdBgBIAEoDjIhLlVz",
-          "ZXJHZXRJbmZvUmVzLlVzZXJHZXRJbmZvUmVzdWx0IkEKEVVzZXJHZXRJbmZv",
-          "UmVzdWx0EgsKB1VOS05PV04QABILCgdTVUNDRVNTEAESEgoOVVNFUl9OT1Rf",
-          "Rk9VTkQQAkIfChBtYWZpYS5zZXJ2ZXIud2ViQgtXZWJQcm90b2NvbGIGcHJv",
-          "dG8z"));
+          "ZXJHZXRJbmZvUmVzLlVzZXJHZXRJbmZvUmVzdWx0EhAKCG5pY2tuYW1lGAIg",
+          "ASgJEg0KBWxldmVsGAMgASgFEgsKA2V4cBgEIAEoAyJBChFVc2VyR2V0SW5m",
+          "b1Jlc3VsdBILCgdVTktOT1dOEAASCwoHU1VDQ0VTUxABEhIKDlVTRVJfTk9U",
+          "X0ZPVU5EEAJCHwoQbWFmaWEuc2VydmVyLndlYkILV2ViUHJvdG9jb2xiBnBy",
+          "b3RvMw=="));
     descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
         new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
         new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -53,7 +54,7 @@ public static partial class WebProtocolReflection {
           new pbr::GeneratedClrTypeInfo(typeof(global::UserGetInfoReq), global::UserGetInfoReq.Parser, null, null, null, null, null),
           new pbr::GeneratedClrTypeInfo(typeof(global::Response), global::Response.Parser, new[]{ "Command", "Result", "Message", "Timestamp", "UserCreateRes", "UserGetInfoRes" }, new[]{ "Body" }, new[]{ typeof(global::Response.Types.Result) }, null, null),
           new pbr::GeneratedClrTypeInfo(typeof(global::UserCreateRes), global::UserCreateRes.Parser, new[]{ "UserCreateResult" }, null, new[]{ typeof(global::UserCreateRes.Types.UserCreateResult) }, null, null),
-          new pbr::GeneratedClrTypeInfo(typeof(global::UserGetInfoRes), global::UserGetInfoRes.Parser, new[]{ "UserGetInfoResult" }, null, new[]{ typeof(global::UserGetInfoRes.Types.UserGetInfoResult) }, null, null)
+          new pbr::GeneratedClrTypeInfo(typeof(global::UserGetInfoRes), global::UserGetInfoRes.Parser, new[]{ "UserGetInfoResult", "Nickname", "Level", "Exp" }, null, new[]{ typeof(global::UserGetInfoRes.Types.UserGetInfoResult) }, null, null)
         }));
   }
   #endregion
@@ -1531,6 +1532,9 @@ public sealed partial class UserGetInfoRes : pb::IMessage<UserGetInfoRes>
   [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public UserGetInfoRes(UserGetInfoRes other) : this() {
     userGetInfoResult_ = other.userGetInfoResult_;
+    nickname_ = other.nickname_;
+    level_ = other.level_;
+    exp_ = other.exp_;
     _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
   }
 
@@ -1552,6 +1556,42 @@ public sealed partial class UserGetInfoRes : pb::IMessage<UserGetInfoRes>
     }
   }
 
+  /// <summary>Field number for the "nickname" field.</summary>
+  public const int NicknameFieldNumber = 2;
+  private string nickname_ = "";
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+  public string Nickname {
+    get { return nickname_; }
+    set {
+      nickname_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+    }
+  }
+
+  /// <summary>Field number for the "level" field.</summary>
+  public const int LevelFieldNumber = 3;
+  private int level_;
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+  public int Level {
+    get { return level_; }
+    set {
+      level_ = value;
+    }
+  }
+
+  /// <summary>Field number for the "exp" field.</summary>
+  public const int ExpFieldNumber = 4;
+  private long exp_;
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+  public long Exp {
+    get { return exp_; }
+    set {
+      exp_ = value;
+    }
+  }
+
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
   [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override bool Equals(object other) {
@@ -1568,6 +1608,9 @@ public sealed partial class UserGetInfoRes : pb::IMessage<UserGetInfoRes>
       return true;
     }
     if (UserGetInfoResult != other.UserGetInfoResult) return false;
+    if (Nickname != other.Nickname) return false;
+    if (Level != other.Level) return false;
+    if (Exp != other.Exp) return false;
     return Equals(_unknownFields, other._unknownFields);
   }
 
@@ -1576,6 +1619,9 @@ public sealed partial class UserGetInfoRes : pb::IMessage<UserGetInfoRes>
   public override int GetHashCode() {
     int hash = 1;
     if (UserGetInfoResult != global::UserGetInfoRes.Types.UserGetInfoResult.Unknown) hash ^= UserGetInfoResult.GetHashCode();
+    if (Nickname.Length != 0) hash ^= Nickname.GetHashCode();
+    if (Level != 0) hash ^= Level.GetHashCode();
+    if (Exp != 0L) hash ^= Exp.GetHashCode();
     if (_unknownFields != null) {
       hash ^= _unknownFields.GetHashCode();
     }
@@ -1598,6 +1644,18 @@ public sealed partial class UserGetInfoRes : pb::IMessage<UserGetInfoRes>
       output.WriteRawTag(8);
       output.WriteEnum((int) UserGetInfoResult);
     }
+    if (Nickname.Length != 0) {
+      output.WriteRawTag(18);
+      output.WriteString(Nickname);
+    }
+    if (Level != 0) {
+      output.WriteRawTag(24);
+      output.WriteInt32(Level);
+    }
+    if (Exp != 0L) {
+      output.WriteRawTag(32);
+      output.WriteInt64(Exp);
+    }
     if (_unknownFields != null) {
       _unknownFields.WriteTo(output);
     }
@@ -1612,6 +1670,18 @@ public sealed partial class UserGetInfoRes : pb::IMessage<UserGetInfoRes>
       output.WriteRawTag(8);
       output.WriteEnum((int) UserGetInfoResult);
     }
+    if (Nickname.Length != 0) {
+      output.WriteRawTag(18);
+      output.WriteString(Nickname);
+    }
+    if (Level != 0) {
+      output.WriteRawTag(24);
+      output.WriteInt32(Level);
+    }
+    if (Exp != 0L) {
+      output.WriteRawTag(32);
+      output.WriteInt64(Exp);
+    }
     if (_unknownFields != null) {
       _unknownFields.WriteTo(ref output);
     }
@@ -1624,6 +1694,15 @@ public sealed partial class UserGetInfoRes : pb::IMessage<UserGetInfoRes>
     int size = 0;
     if (UserGetInfoResult != global::UserGetInfoRes.Types.UserGetInfoResult.Unknown) {
       size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) UserGetInfoResult);
+    }
+    if (Nickname.Length != 0) {
+      size += 1 + pb::CodedOutputStream.ComputeStringSize(Nickname);
+    }
+    if (Level != 0) {
+      size += 1 + pb::CodedOutputStream.ComputeInt32Size(Level);
+    }
+    if (Exp != 0L) {
+      size += 1 + pb::CodedOutputStream.ComputeInt64Size(Exp);
     }
     if (_unknownFields != null) {
       size += _unknownFields.CalculateSize();
@@ -1639,6 +1718,15 @@ public sealed partial class UserGetInfoRes : pb::IMessage<UserGetInfoRes>
     }
     if (other.UserGetInfoResult != global::UserGetInfoRes.Types.UserGetInfoResult.Unknown) {
       UserGetInfoResult = other.UserGetInfoResult;
+    }
+    if (other.Nickname.Length != 0) {
+      Nickname = other.Nickname;
+    }
+    if (other.Level != 0) {
+      Level = other.Level;
+    }
+    if (other.Exp != 0L) {
+      Exp = other.Exp;
     }
     _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
   }
@@ -1663,6 +1751,18 @@ public sealed partial class UserGetInfoRes : pb::IMessage<UserGetInfoRes>
           UserGetInfoResult = (global::UserGetInfoRes.Types.UserGetInfoResult) input.ReadEnum();
           break;
         }
+        case 18: {
+          Nickname = input.ReadString();
+          break;
+        }
+        case 24: {
+          Level = input.ReadInt32();
+          break;
+        }
+        case 32: {
+          Exp = input.ReadInt64();
+          break;
+        }
       }
     }
   #endif
@@ -1684,6 +1784,18 @@ public sealed partial class UserGetInfoRes : pb::IMessage<UserGetInfoRes>
           break;
         case 8: {
           UserGetInfoResult = (global::UserGetInfoRes.Types.UserGetInfoResult) input.ReadEnum();
+          break;
+        }
+        case 18: {
+          Nickname = input.ReadString();
+          break;
+        }
+        case 24: {
+          Level = input.ReadInt32();
+          break;
+        }
+        case 32: {
+          Exp = input.ReadInt64();
           break;
         }
       }
