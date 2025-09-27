@@ -70,4 +70,7 @@ message UserGetInfoRes {
     USER_NOT_FOUND = 2; // USER_CREATE 요청 필요
   }
   UserGetInfoResult user_get_info_result = 1;
+  string nickname = 2;
+  int32 level = 3;
+  int64 exp = 4;
 }

@@ -2,11 +2,23 @@
 POST http://localhost:8080/rpc
 Content-Type: application/json
 Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiYWNjb3VudElkIjoxLCJhdXRob3JpdGllcyI6WyJST0xFX1VTRVIiXSwiZXhwIjoxNzU4OTAyOTE0fQ.-lhq2hLLodwUFgKOORAVIoNA89jp-1RMJFT3ITtYxzyu6pfvC8M4YGOx02RQNSHJ32uh2FT3Gi_pMDXhDAVZIQ
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiYWNjb3VudElkIjoxLCJhdXRob3JpdGllcyI6WyJST0xFX1VTRVIiXSwiZXhwIjoxNzU4OTgwMTY2fQ.7_tCXUWAp0xFvOSZlocbxeZ5vS8Uv0op8kIxFFZjF7pXRUDrzEsa8iFomI0FbqSmUoifMeN2GZJI5muUZYsB9Q
 
 {
   "command": "USER_CREATE",
   "userCreateReq": {
     "nickname": "testnick"
+  }
+}
+
+### USER_GET_INFO
+POST http://localhost:8080/rpc
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwiYWNjb3VudElkIjoxLCJhdXRob3JpdGllcyI6WyJST0xFX1VTRVIiXSwiZXhwIjoxNzU4OTgwMTY2fQ.7_tCXUWAp0xFvOSZlocbxeZ5vS8Uv0op8kIxFFZjF7pXRUDrzEsa8iFomI0FbqSmUoifMeN2GZJI5muUZYsB9Q
+
+{
+  "command": "USER_GET_INFO",
+  "userGetInfoReq": {
   }
 }

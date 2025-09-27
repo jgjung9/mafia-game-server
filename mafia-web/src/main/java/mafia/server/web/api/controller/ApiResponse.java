@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.ToString;
 import org.springframework.http.HttpStatus;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @ToString
@@ -14,7 +14,7 @@ public class ApiResponse<T> {
     private final T body;
     private final String errorCode;
     private final String message;
-    private final LocalDateTime timestamp;
+    private final Instant timestamp;
 
     @Builder
     private ApiResponse(int status, T body, String errorCode, String message) {
@@ -22,7 +22,7 @@ public class ApiResponse<T> {
         this.body = body;
         this.errorCode = errorCode;
         this.message = message;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = Instant.now();
     }
 
     public static <T> ApiResponse<T> response(int status, T body, String errorCode, String message) {
