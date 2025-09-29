@@ -4,6 +4,7 @@ import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mafia.server.lobby.common.Constant;
+import mafia.server.lobby.common.ProtobufUtils;
 import mafia.server.lobby.core.LobbyClient;
 import mafia.server.lobby.core.LobbyClientManager;
 import mafia.server.lobby.core.UserDto;
@@ -11,6 +12,9 @@ import mafia.server.lobby.protocol.*;
 import mafia.server.lobby.service.UserService;
 import org.springframework.grpc.server.service.GrpcService;
 
+import java.time.LocalDateTime;
+
+@Slf4j
 @GrpcService(interceptors = JwtInterceptor.class)
 @RequiredArgsConstructor
 public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
@@ -37,6 +41,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
             switch (lobbyClientMessage.getContentCase()) {
                 case CONNECT -> handleConnect(lobbyClientMessage.getConnect());
                 case SET_USER_STATUS -> handleSetUserStatus(lobbyClientMessage.getSetUserStatus());
+                case CHAT_ALL -> handleChatAll(lobbyClientMessage.getChatAll());
             }
         }
 
@@ -58,16 +63,41 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
         }
 
         private void handleConnect(ClientConnect connect) {
-            Long accountId = Long.valueOf(Constant.CLIENT_ID_CONTEXT_KEY.get());
+            Long accountId = getAccountId();
+            log.debug("handleConnect accountId={}", accountId);
+
             UserDto userDto = userService.findByAccountId(accountId);
             lobbyClientManager.addClient(accountId, new LobbyClient(accountId, userDto, responseObserver));
         }
 
         private void handleSetUserStatus(ClientSetUserStatus setUserStatus) {
-            Long accountId = Long.valueOf(Constant.CLIENT_ID_CONTEXT_KEY.get());
+            Long accountId = getAccountId();
+            log.debug("handleSetUserStatus accountId={}, setUserStatus={}", accountId, setUserStatus);
+
             LobbyClient lobbyClient = lobbyClientManager.getClient(accountId)
                     .orElseThrow();
             lobbyClient.setUserStatus(setUserStatus.getUserStatus());
+        }
+
+        private void handleChatAll(ClientChatAll chatAll) {
+            Long accountId = getAccountId();
+            LocalDateTime now = LocalDateTime.now();
+            log.debug("handleChatAll accountId={}, chatAll={}", accountId, chatAll);
+
+            UserDto userDto = lobbyClientManager.getClient(accountId)
+                    .orElseThrow()
+                    .getUserDto();
+
+            LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
+                    .setChatAll(ServerChatAll.newBuilder()
+                            .setAccountId(accountId)
+                            .setNickname(userDto.nickname())
+                            .setMessage(chatAll.getMessage())
+                            .build())
+                    .setTimestamp(ProtobufUtils.toTimestamp(now))
+                    .build();
+
+            lobbyClientManager.broadcastLobby(serverMessage);
         }
     }
 }

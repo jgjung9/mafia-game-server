@@ -51,7 +51,7 @@ message ClientSetUserStatus {
 }
 
 message ClientChatAll {
-
+  string message = 1;
 }
 
 message ClientChatDirect {
@@ -152,7 +152,9 @@ message ServerUpdateUserStatus {
 }
 
 message ServerChatAll {
-
+  int64 account_id = 1;
+  string nickname = 2;
+  string message = 3;
 }
 
 message ServerChatDirect {
