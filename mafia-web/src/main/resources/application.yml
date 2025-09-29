@@ -64,21 +64,21 @@ spring:
 
   datasource:
     account:
-      url: jdbc:h2:mem:account
-      username: sa
-      password:
+      url: jdbc:mysql://${DB_ACCOUNT_URL:localhost:3306}/account
+      username: ${DB_ACCOUNT_USERNAME:root}
+      password: ${DB_ACCOUNT_PASSWORD:1234}
       enabled: true
 
     game:
-      url: jdbc:h2:mem:game
-      username: sa
-      password:
+      url: jdbc:mysql://${DB_GAME_URL:localhost:3306}/game
+      username: ${DB_GAME_USERNAME:root}
+      password: ${DB_GAME_PASSWORD:1234}
       enabled: true
 
     log:
-      url: jdbc:h2:mem:log
-      username: sa
-      password:
+      url: jdbc:mysql://${DB_LOG_URL:localhost:3306}/log
+      username: ${DB_LOG_USERNAME:root}
+      password: ${DB_LOG_PASSWORD:1234}
       enabled: true
 
   jpa:
@@ -103,21 +103,21 @@ spring:
 
   datasource:
     account:
-      url: jdbc:h2:mem:account
-      username: sa
-      password:
+      url: jdbc:mysql://${DB_ACCOUNT_URL:localhost:3306}/account
+      username: ${DB_ACCOUNT_USERNAME:root}
+      password: ${DB_ACCOUNT_PASSWORD:1234}
       enabled: true
 
     game:
-      url: jdbc:h2:mem:game
-      username: sa
-      password:
+      url: jdbc:mysql://${DB_GAME_URL:localhost:3306}/game
+      username: ${DB_GAME_USERNAME:root}
+      password: ${DB_GAME_PASSWORD:1234}
       enabled: true
 
     log:
-      url: jdbc:h2:mem:log
-      username: sa
-      password:
+      url: jdbc:mysql://${DB_LOG_URL:localhost:3306}/log
+      username: ${DB_LOG_USERNAME:root}
+      password: ${DB_LOG_PASSWORD:1234}
       enabled: true
 
   jpa:

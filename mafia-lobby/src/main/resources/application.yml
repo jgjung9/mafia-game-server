@@ -29,6 +29,7 @@ spring:
 jwt:
   secret_key: d606a53ae647793f00d9e72598d28457dc9c51ad1f84e33dcb74233531515b11
 
+
 logging:
   level:
     mafia.server: trace
@@ -48,15 +49,15 @@ spring:
 
   datasource:
     game:
-      url: jdbc:h2:mem:game
-      username: sa
-      password:
+      url: jdbc:mysql://${DB_GAME_URL:localhost:3306}/game
+      username: ${DB_GAME_USERNAME:root}
+      password: ${DB_GAME_PASSWORD:1234}
       enabled: true
 
     log:
-      url: jdbc:h2:mem:log
-      username: sa
-      password:
+      url: jdbc:mysql://${DB_LOG_URL:localhost:3306}/log
+      username: ${DB_LOG_USERNAME:root}
+      password: ${DB_LOG_PASSWORD:1234}
       enabled: true
 
   jpa:
@@ -81,15 +82,15 @@ spring:
 
   datasource:
     game:
-      url: jdbc:h2:mem:game
-      username: sa
-      password:
+      url: jdbc:mysql://${DB_GAME_URL:localhost:3306}/game
+      username: ${DB_GAME_USERNAME:root}
+      password: ${DB_GAME_PASSWORD:1234}
       enabled: true
 
     log:
-      url: jdbc:h2:mem:log
-      username: sa
-      password:
+      url: jdbc:mysql://${DB_LOG_URL:localhost:3306}/log
+      username: ${DB_LOG_USERNAME:root}
+      password: ${DB_LOG_PASSWORD:1234}
       enabled: true
 
   jpa:
