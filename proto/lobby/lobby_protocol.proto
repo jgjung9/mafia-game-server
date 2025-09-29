@@ -1,14 +1,16 @@
 syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
+import "lobby_common.proto";
 
 option java_multiple_files = true;
 option java_package = "mafia.server.lobby.protocol";
 
 enum UserStatus {
   OFFLINE = 0;
-  LOBBY = 1;
-  PLAYING = 2;
+  PENDING = 1;
+  LOBBY = 2;
+  PLAYING = 3;
 }
 
 service LobbyService {
@@ -45,7 +47,7 @@ message ClientConnect {
 }
 
 message ClientSetUserStatus {
-
+  UserStatus user_status = 1;
 }
 
 message ClientChatAll {
@@ -180,3 +182,4 @@ message ServerChatRoom {
 message ServerStartGame {
 
 }
+
