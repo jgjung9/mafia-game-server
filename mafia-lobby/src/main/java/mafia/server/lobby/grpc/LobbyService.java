@@ -7,10 +7,7 @@ import mafia.server.lobby.common.Constant;
 import mafia.server.lobby.core.LobbyClient;
 import mafia.server.lobby.core.LobbyClientManager;
 import mafia.server.lobby.core.UserDto;
-import mafia.server.lobby.protocol.ClientConnect;
-import mafia.server.lobby.protocol.LobbyClientMessage;
-import mafia.server.lobby.protocol.LobbyServerMessage;
-import mafia.server.lobby.protocol.LobbyServiceGrpc;
+import mafia.server.lobby.protocol.*;
 import mafia.server.lobby.service.UserService;
 import org.springframework.grpc.server.service.GrpcService;
 
@@ -39,6 +36,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
         public void onNext(LobbyClientMessage lobbyClientMessage) {
             switch (lobbyClientMessage.getContentCase()) {
                 case CONNECT -> handleConnect(lobbyClientMessage.getConnect());
+                case SET_USER_STATUS -> handleSetUserStatus(lobbyClientMessage.getSetUserStatus());
             }
         }
 
@@ -55,14 +53,21 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
             responseObserver.onCompleted();
         }
 
+        private Long getAccountId() {
+            return Long.valueOf(Constant.CLIENT_ID_CONTEXT_KEY.get());
+        }
+
         private void handleConnect(ClientConnect connect) {
             Long accountId = Long.valueOf(Constant.CLIENT_ID_CONTEXT_KEY.get());
             UserDto userDto = userService.findByAccountId(accountId);
             lobbyClientManager.addClient(accountId, new LobbyClient(accountId, userDto, responseObserver));
         }
 
-        private Long getAccountId() {
-            return Long.valueOf(Constant.CLIENT_ID_CONTEXT_KEY.get());
+        private void handleSetUserStatus(ClientSetUserStatus setUserStatus) {
+            Long accountId = Long.valueOf(Constant.CLIENT_ID_CONTEXT_KEY.get());
+            LobbyClient lobbyClient = lobbyClientManager.getClient(accountId)
+                    .orElseThrow();
+            lobbyClient.setUserStatus(setUserStatus.getUserStatus());
         }
     }
 }

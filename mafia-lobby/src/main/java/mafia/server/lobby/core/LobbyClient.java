@@ -2,6 +2,7 @@ package mafia.server.lobby.core;
 
 import io.grpc.stub.StreamObserver;
 import lombok.Getter;
+import lombok.Setter;
 import mafia.server.lobby.protocol.LobbyServerMessage;
 import mafia.server.lobby.protocol.UserStatus;
 
@@ -14,6 +15,7 @@ public class LobbyClient {
     private final Long accountId;
     private final UserDto userDto;
     private final StreamObserver<LobbyServerMessage> observer;
+    @Setter
     private UserStatus userStatus;
 
     public LobbyClient(Long accountId, UserDto userDto, StreamObserver<LobbyServerMessage> observer) {

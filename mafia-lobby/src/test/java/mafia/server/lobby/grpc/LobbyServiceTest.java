@@ -8,10 +8,8 @@ import mafia.server.data.domain.game.user.UserRepository;
 import mafia.server.lobby.common.Constant;
 import mafia.server.lobby.core.LobbyClient;
 import mafia.server.lobby.core.LobbyClientManager;
-import mafia.server.lobby.protocol.ClientConnect;
-import mafia.server.lobby.protocol.LobbyClientMessage;
-import mafia.server.lobby.protocol.LobbyServerMessage;
-import mafia.server.lobby.protocol.UserStatus;
+import mafia.server.lobby.core.UserDto;
+import mafia.server.lobby.protocol.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.grpc.server.inprocess.exclusive=true")
 class LobbyServiceTest {
 
     @Autowired
@@ -45,10 +43,11 @@ class LobbyServiceTest {
         Context context = saveUserAndReturnContext(accountId, nickname);
         StreamRecorder<LobbyServerMessage> responseObserver = StreamRecorder.create();
 
-        // when
         LobbyClientMessage clientMessage = LobbyClientMessage.newBuilder()
                 .setConnect(ClientConnect.getDefaultInstance())
                 .build();
+
+        // when
         context.run(() -> {
             StreamObserver<LobbyClientMessage> requestObserver = lobbyService.handleCommunication(responseObserver);
             requestObserver.onNext(clientMessage);
@@ -62,6 +61,35 @@ class LobbyServiceTest {
         assertThat(lobbyClient.getUserDto().nickname()).isEqualTo(nickname);
     }
 
+    @Test
+    @DisplayName("로비서버의 유저의 상태를 변경한다")
+    void setUserStatus() throws Exception {
+        // given
+        Long accountId = 1L;
+        String nickname = "testnick";
+        Context context = saveUserAndReturnContext(accountId, nickname);
+        StreamRecorder<LobbyServerMessage> responseObserver = StreamRecorder.create();
+        LobbyClient lobbyClient = createLobbyClient(accountId, nickname, UserStatus.PENDING, responseObserver);
+        lobbyClientManager.addClient(accountId, lobbyClient);
+
+        UserStatus userStatus = UserStatus.LOBBY;
+        LobbyClientMessage clientMessage = LobbyClientMessage.newBuilder()
+                .setSetUserStatus(ClientSetUserStatus.newBuilder()
+                        .setUserStatus(userStatus)
+                        .build()
+                )
+                .build();
+
+        // when
+        context.run(() -> {
+            StreamObserver<LobbyClientMessage> requestObserver = lobbyService.handleCommunication(responseObserver);
+            requestObserver.onNext(clientMessage);
+        });
+
+        // then
+        assertThat(lobbyClient.getUserStatus()).isEqualTo(userStatus);
+    }
+
     private Context saveUserAndReturnContext(Long accountId, String nickname) {
         userRepository.save(createUser(accountId, nickname));
         return Context.current().withValue(Constant.CLIENT_ID_CONTEXT_KEY, accountId.toString());
@@ -72,5 +100,11 @@ class LobbyServiceTest {
                 .accountId(accountId)
                 .nickname(nickname)
                 .build();
+    }
+
+    private LobbyClient createLobbyClient(Long accountId, String nickname, UserStatus status, StreamObserver<LobbyServerMessage> responseObserver) {
+        LobbyClient lobbyClient = new LobbyClient(accountId, new UserDto(1L, nickname), responseObserver);
+        lobbyClient.setUserStatus(status);
+        return lobbyClient;
     }
 }
