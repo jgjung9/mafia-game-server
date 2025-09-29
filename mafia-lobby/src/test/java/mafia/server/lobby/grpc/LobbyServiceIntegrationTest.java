@@ -1,6 +1,7 @@
 package mafia.server.lobby.grpc;
 
 import io.grpc.CallCredentials;
+import io.grpc.Context;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.internal.testing.StreamRecorder;
@@ -10,6 +11,7 @@ import mafia.server.data.domain.game.user.UserRepository;
 import mafia.server.lobby.common.Constant;
 import mafia.server.lobby.core.LobbyClient;
 import mafia.server.lobby.core.LobbyClientManager;
+import mafia.server.lobby.core.UserDto;
 import mafia.server.lobby.protocol.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +40,8 @@ class LobbyServiceIntegrationTest {
     private LobbyClientManager lobbyClientManager;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private LobbyService lobbyService;
     private LobbyServiceGrpc.LobbyServiceStub stub;
 
     private final Long testAccountId = 1L;
@@ -177,6 +181,68 @@ class LobbyServiceIntegrationTest {
         assertThat(chatAll.getAccountId()).isEqualTo(testAccountId);
         assertThat(chatAll.getNickname()).isEqualTo(testNickname);
         assertThat(chatAll.getMessage()).isEqualTo(message);
+        requestObserver.onCompleted();
+    }
+
+    @Test
+    @DisplayName("유저에게 개인 메시지를 보낼 수 있다")
+    void clientChatDirect() throws Exception {
+        // given
+        // 테스트 기본 유저 설정 (DM을 받는 유저)
+        StreamRecorder<LobbyServerMessage> responseObserver = StreamRecorder.create();
+        StreamObserver<LobbyClientMessage> requestObserver = stub.handleCommunication(responseObserver);
+        LobbyClientMessage connectMessage = LobbyClientMessage.newBuilder()
+                .setConnect(ClientConnect.getDefaultInstance())
+                .build();
+        LobbyClientMessage setUserStatusMessage = LobbyClientMessage.newBuilder()
+                .setSetUserStatus(ClientSetUserStatus.newBuilder()
+                        .setUserStatus(UserStatus.LOBBY)
+                        .build())
+                .build();
+
+        // 디엠을 보내는 유저 설정
+        Long senderId = 2L;
+        String senderNickname = "sender";
+        String message = "test message content";
+        StreamRecorder<LobbyServerMessage> senderResponseObserver = StreamRecorder.create();
+        LobbyClientMessage chatDirectMessage = LobbyClientMessage.newBuilder()
+                .setChatDirect(ClientChatDirect.newBuilder()
+                        .setAccountId(testAccountId)
+                        .setMessage(message)
+                        .build())
+                .build();
+        lobbyClientManager.addClient(senderId, new LobbyClient(senderId, new UserDto(2L, senderNickname), senderResponseObserver));
+
+        // when
+        requestObserver.onNext(connectMessage);
+        requestObserver.onNext(setUserStatusMessage);
+        // 메시지를 받은 유저가 준비가 끝날때까지 기다린다
+        await()
+                .during(Duration.ofSeconds(1))
+                .until(() -> {
+                    if (lobbyClientManager.getClient(testAccountId).isEmpty()) {
+                        return false;
+                    }
+                    return lobbyClientManager.getClient(testAccountId).get().getUserStatus() == UserStatus.LOBBY;
+                });
+        // 메시지를 보낸다
+        Context context = Context.current().withValue(Constant.CLIENT_ID_CONTEXT_KEY, senderId.toString());
+        context.call(() -> {
+            StreamObserver<LobbyClientMessage> senderRequestObserver = lobbyService.handleCommunication(senderResponseObserver);
+            senderRequestObserver.onNext(chatDirectMessage);
+            return senderRequestObserver;
+        });
+        await()
+                .during(Duration.ofSeconds(1))
+                .until(() -> !responseObserver.getValues().isEmpty());
+
+        // then
+        List<LobbyServerMessage> serverMessages = responseObserver.getValues();
+        assertThat(serverMessages).hasSize(1);
+        ServerChatDirect chatDirect = serverMessages.getFirst().getChatDirect();
+        assertThat(chatDirect.getAccountId()).isEqualTo(senderId);
+        assertThat(chatDirect.getNickname()).isEqualTo(senderNickname);
+        assertThat(chatDirect.getMessage()).isEqualTo(message);
         requestObserver.onCompleted();
     }
 
