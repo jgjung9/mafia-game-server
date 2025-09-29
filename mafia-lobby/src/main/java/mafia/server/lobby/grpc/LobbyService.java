@@ -42,6 +42,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                 case CONNECT -> handleConnect(lobbyClientMessage.getConnect());
                 case SET_USER_STATUS -> handleSetUserStatus(lobbyClientMessage.getSetUserStatus());
                 case CHAT_ALL -> handleChatAll(lobbyClientMessage.getChatAll());
+                case CHAT_DIRECT -> handleChatDirect(lobbyClientMessage.getChatDirect());
             }
         }
 
@@ -98,6 +99,27 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                     .build();
 
             lobbyClientManager.broadcastLobby(serverMessage);
+        }
+
+        private void handleChatDirect(ClientChatDirect chatDirect) {
+            Long accountId = getAccountId();
+            LocalDateTime now = LocalDateTime.now();
+            log.debug("handleChatDirect accountId={}, chatDirect={}", accountId, chatDirect);
+
+            UserDto userDto = lobbyClientManager.getClient(accountId)
+                    .orElseThrow()
+                    .getUserDto();
+
+            LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
+                    .setChatDirect(ServerChatDirect.newBuilder()
+                            .setAccountId(accountId)
+                            .setNickname(userDto.nickname())
+                            .setMessage(chatDirect.getMessage())
+                            .build())
+                    .setTimestamp(ProtobufUtils.toTimestamp(now))
+                    .build();
+
+            lobbyClientManager.sendMessage(chatDirect.getAccountId(), serverMessage);
         }
     }
 }

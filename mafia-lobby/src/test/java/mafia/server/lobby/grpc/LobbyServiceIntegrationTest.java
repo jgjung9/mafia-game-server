@@ -21,6 +21,7 @@ import org.springframework.grpc.client.GrpcChannelFactory;
 import org.springframework.grpc.test.AutoConfigureInProcessTransport;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -127,6 +128,55 @@ class LobbyServiceIntegrationTest {
         LobbyClient lobbyClient = lobbyClientManager.getClient(testAccountId).get();
         assertThat(lobbyClient.getAccountId()).isEqualTo(testAccountId);
         assertThat(lobbyClient.getUserStatus()).isEqualTo(UserStatus.LOBBY);
+        requestObserver.onCompleted();
+    }
+
+    @Test
+    @DisplayName("현재 로비에 접속해 있는 사람들에게 채팅 메시지를 보낼 수 있다")
+    void clientChatAll() throws Exception {
+        // given
+        StreamRecorder<LobbyServerMessage> responseObserver = StreamRecorder.create();
+        StreamObserver<LobbyClientMessage> requestObserver = stub.handleCommunication(responseObserver);
+        String message = "test message content";
+
+        LobbyClientMessage connectMessage = LobbyClientMessage.newBuilder()
+                .setConnect(ClientConnect.getDefaultInstance())
+                .build();
+        LobbyClientMessage setUserStatusMessage = LobbyClientMessage.newBuilder()
+                .setSetUserStatus(ClientSetUserStatus.newBuilder()
+                        .setUserStatus(UserStatus.LOBBY)
+                        .build())
+                .build();
+
+        LobbyClientMessage chatAllMessage = LobbyClientMessage.newBuilder()
+                .setChatAll(ClientChatAll.newBuilder()
+                        .setMessage(message)
+                        .build())
+                .build();
+
+        // when
+        requestObserver.onNext(connectMessage);
+        requestObserver.onNext(setUserStatusMessage);
+        requestObserver.onNext(chatAllMessage);
+        await()
+                .during(Duration.ofMillis(1000))
+                .until(() -> {
+                    if (lobbyClientManager.getClient(testAccountId).isEmpty()) {
+                        return false;
+                    }
+                    if (lobbyClientManager.getClient(testAccountId).get().getUserStatus() != UserStatus.LOBBY) {
+                        return false;
+                    }
+                    return !responseObserver.getValues().isEmpty();
+                });
+
+        // then
+        List<LobbyServerMessage> serverMessages = responseObserver.getValues();
+        assertThat(serverMessages).hasSize(1);
+        ServerChatAll chatAll = serverMessages.getFirst().getChatAll();
+        assertThat(chatAll.getAccountId()).isEqualTo(testAccountId);
+        assertThat(chatAll.getNickname()).isEqualTo(testNickname);
+        assertThat(chatAll.getMessage()).isEqualTo(message);
         requestObserver.onCompleted();
     }
 
