@@ -22,7 +22,9 @@ public class LobbyClientManager {
     public synchronized void removeClient(Long accountId) {
         log.info("Client Disconnect: accountId={}", accountId);
         LobbyClient removed = clients.remove(accountId);
-        removed.close();
+        if (removed != null) {
+            removed.close();
+        }
     }
 
     public Optional<LobbyClient> getClient(Long accountId) {

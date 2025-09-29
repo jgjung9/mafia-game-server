@@ -6,12 +6,14 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import mafia.server.lobby.common.Constant;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 
+@Slf4j
 @Component
 public class JwtInterceptor implements ServerInterceptor {
 
@@ -28,7 +30,7 @@ public class JwtInterceptor implements ServerInterceptor {
             ServerCall<ReqT, RespT> serverCall, Metadata metadata, ServerCallHandler<ReqT, RespT> serverCallHandler
     ) {
         String authorizationHeader = metadata.get(Constant.AUTHORIZATION_METADATA_KEY);
-
+        log.debug("authorizationHeader={}", authorizationHeader);
         Status status = Status.OK;
         if (authorizationHeader == null) {
             status = Status.UNAUTHENTICATED.withDescription("Unauthenticated: Token is missing");
