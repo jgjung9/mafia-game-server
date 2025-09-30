@@ -191,6 +191,7 @@ message ServerEnterRoomResult {
     NOT_FOUND = 3;
   }
   Type type = 1;
+  Common.RoomDetail room_detail = 2;
 }
 
 message ServerInviteRoomResult {
@@ -229,6 +230,16 @@ message Common {
     int32 room_id = 1;
     string title = 2;
     int32 user_count = 3;
+  }
+
+  message RoomUser {
+    int64 account_id = 1;
+    bool ready = 2;
+  }
+
+  message RoomDetail {
+    RoomInfo room_info = 1;
+    repeated RoomUser users = 2;
   }
 }
 

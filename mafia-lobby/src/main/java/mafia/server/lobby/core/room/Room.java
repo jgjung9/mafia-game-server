@@ -9,6 +9,7 @@ import mafia.server.lobby.protocol.LobbyServerMessage;
 import mafia.server.lobby.protocol.ServerUpdateRoom;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,6 +24,7 @@ public class Room {
     private String title;
     private final RoomManager roomManager;
     private final Map<Long, LobbyClient> members = new ConcurrentHashMap<>();
+    private final Map<Long, Boolean> readyMap = new ConcurrentHashMap<>();
     private final int DEFAULT_MAX_USER_COUNT = 8;
 
     public Room(int id, String title, LobbyClient creator, RoomManager roomManager) {
@@ -31,6 +33,7 @@ public class Room {
         this.hostId = creator.getAccountId();
         this.roomManager = roomManager;
         members.put(creator.getAccountId(), creator);
+        readyMap.put(creator.getAccountId(), false);
         roomManager.registerUser(creator.getAccountId(), id);
     }
 
@@ -40,6 +43,7 @@ public class Room {
         }
 
         members.put(client.getAccountId(), client);
+        readyMap.put(client.getAccountId(), false);
         roomManager.registerUser(client.getAccountId(), id);
 
         // 방에 있는 사람들에게 입장을 알린다.
@@ -57,6 +61,7 @@ public class Room {
 
     public synchronized void leave(Long accountId) {
         LobbyClient removed = members.remove(accountId);
+        readyMap.remove(accountId);
         roomManager.removeUser(removed.getAccountId());
 
         // 유저가 떠났음을 알린다.
@@ -100,6 +105,15 @@ public class Room {
                 .setTitle(title)
                 .setUserCount(getUserCount())
                 .build();
+    }
+
+    public List<Common.RoomUser> getRoomUsers() {
+        return members.values().stream()
+                .map(client -> Common.RoomUser.newBuilder()
+                        .setAccountId(client.getAccountId())
+                        .setReady(readyMap.getOrDefault(client.getAccountId(), false))
+                        .build())
+                .toList();
     }
 
     private void changeHost() {

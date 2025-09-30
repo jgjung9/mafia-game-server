@@ -166,13 +166,18 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                 resultType = room.enter(client) ? ServerEnterRoomResult.Type.SUCCESS : ServerEnterRoomResult.Type.ALREADY_FULL;
             }
 
-            LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
-                    .setTimestamp(ProtobufUtils.toTimestamp(now))
-                    .setEnterRoomResult(ServerEnterRoomResult.newBuilder()
-                            .setType(resultType)
-                            .build())
-                    .build();
-            client.sendMessage(serverMessage);
+            LobbyServerMessage.Builder messageBuilder = LobbyServerMessage.newBuilder()
+                    .setTimestamp(ProtobufUtils.toTimestamp(now));
+
+            if (resultType.equals(ServerEnterRoomResult.Type.SUCCESS)) {
+                messageBuilder.setEnterRoomResult(ServerEnterRoomResult.newBuilder()
+                        .setType(resultType)
+                        .setRoomDetail(Common.RoomDetail.newBuilder()
+                                .addAllUsers(room.getRoomUsers())
+                                .build())
+                        .build());
+            }
+            client.sendMessage(messageBuilder.build());
         }
 
         private void handleChatRoom(ClientChatRoom chatRoom) {
