@@ -51,6 +51,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                 case CREATE_ROOM -> handleCreateRoom(lobbyClientMessage.getCreateRoom());
                 case ENTER_ROOM -> handleEnterRoom(lobbyClientMessage.getEnterRoom());
                 case CHAT_ROOM -> handleChatRoom(lobbyClientMessage.getChatRoom());
+                case LEAVE_ROOM -> handleLeaveRoom(lobbyClientMessage.getLeaveRoom());
             }
         }
 
@@ -71,8 +72,8 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
             return Long.valueOf(Constant.CLIENT_ID_CONTEXT_KEY.get());
         }
 
-        // 클라 요청 처리
 
+        // 클라 요청 처리
         private void handleConnect(ClientConnect connect) {
             Long accountId = getAccountId();
             log.debug("handleConnect accountId={}", accountId);
@@ -192,6 +193,18 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                             .build())
                     .build();
             room.broadcast(serverMessage);
+        }
+
+        private void handleLeaveRoom(ClientLeaveRoom leaveRoom) {
+            Long accountId = getAccountId();
+            LocalDateTime now = LocalDateTime.now();
+            log.debug("handleLeaveRoom accountId={}, leaveRoom={}", accountId, leaveRoom);
+
+            LobbyClient client = getClient(accountId);
+            Room room = roomManager.getRoomByAccountId(accountId)
+                    .orElseThrow();
+            room.leave(accountId);
+            updateUserStatus(client, UserStatus.LOBBY, now);
         }
 
         // 상태 변화에 따라 서버 측에서 먼저 보내는 응답
