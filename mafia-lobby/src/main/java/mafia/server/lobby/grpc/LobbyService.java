@@ -8,6 +8,8 @@ import mafia.server.lobby.common.ProtobufUtils;
 import mafia.server.lobby.core.LobbyClient;
 import mafia.server.lobby.core.LobbyClientManager;
 import mafia.server.lobby.core.UserDto;
+import mafia.server.lobby.core.room.Room;
+import mafia.server.lobby.core.room.RoomManager;
 import mafia.server.lobby.protocol.*;
 import mafia.server.lobby.service.UserService;
 import org.springframework.grpc.server.service.GrpcService;
@@ -19,12 +21,13 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
 
-    private final LobbyClientManager lobbyClientManager;
     private final UserService userService;
+    private final LobbyClientManager lobbyClientManager;
+    private final RoomManager roomManager;
 
     @Override
     public StreamObserver<LobbyClientMessage> handleCommunication(StreamObserver<LobbyServerMessage> responseObserver) {
-        return new ClientStreamObserver(responseObserver, lobbyClientManager, userService);
+        return new ClientStreamObserver(responseObserver, userService, lobbyClientManager, roomManager);
     }
 
     @Slf4j
@@ -32,8 +35,9 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
     private static class ClientStreamObserver implements StreamObserver<LobbyClientMessage> {
 
         private final StreamObserver<LobbyServerMessage> responseObserver;
-        private final LobbyClientManager lobbyClientManager;
         private final UserService userService;
+        private final LobbyClientManager lobbyClientManager;
+        private final RoomManager roomManager;
 
 
         @Override
@@ -43,6 +47,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                 case SET_USER_STATUS -> handleSetUserStatus(lobbyClientMessage.getSetUserStatus());
                 case CHAT_ALL -> handleChatAll(lobbyClientMessage.getChatAll());
                 case CHAT_DIRECT -> handleChatDirect(lobbyClientMessage.getChatDirect());
+                case CREATE_ROOM -> handleCreateRoom(lobbyClientMessage.getCreateRoom());
             }
         }
 
@@ -120,6 +125,34 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                     .build();
 
             lobbyClientManager.sendMessage(chatDirect.getAccountId(), serverMessage);
+        }
+
+        private void handleCreateRoom(ClientCreateRoom createRoom) {
+            Long accountId = getAccountId();
+            LocalDateTime now = LocalDateTime.now();
+            log.debug("handleCreateRoom accountId={}, createRoom={}", accountId, createRoom);
+
+            LobbyClient client = lobbyClientManager.getClient(accountId)
+                    .orElseThrow();
+            if (!client.getUserStatus().equals(UserStatus.LOBBY)) {
+                throw new IllegalStateException("Failed to create room: 유저가 로비에 있지 않습니다");
+            }
+
+            Room room = roomManager.createRoom(createRoom.getTitle(), client);
+            client.setUserStatus(UserStatus.ROOM);
+            LobbyServerMessage createResultMessage = LobbyServerMessage.newBuilder()
+                    .setCreateRoomResult(ServerCreateRoomResult.newBuilder()
+                            .setResult(ServerCreateRoomResult.Result.SUCCESS)
+                            .setRoomInfo(Common.RoomInfo.newBuilder()
+                                    .setRoomId(room.getId())
+                                    .setTitle(room.getTitle())
+                                    .setUserCount(room.getUserCount())
+                                    .build())
+                            .build())
+                    .build();
+            client.sendMessage(createResultMessage);
+
+            // TODO: 로비에 있는 유저들에게 방 생성을 알린다.
         }
     }
 }

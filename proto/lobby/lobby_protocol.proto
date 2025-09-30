@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
-import "lobby_common.proto";
 
 option java_multiple_files = true;
 option java_package = "mafia.server.lobby.protocol";
@@ -10,7 +9,8 @@ enum UserStatus {
   OFFLINE = 0;
   PENDING = 1;
   LOBBY = 2;
-  PLAYING = 3;
+  ROOM = 3;
+  PLAYING = 4;
 }
 
 service LobbyService {
@@ -60,7 +60,7 @@ message ClientChatDirect {
 }
 
 message ClientCreateRoom {
-
+  string title = 1;
 }
 
 message ClientEnterRoom {
@@ -119,7 +119,8 @@ message LobbyServerMessage {
     ServerUpdateRoomList update_room_list = 9; // 게임 방 목록 변화시 로비에 있는 유저들에게 전송
 
     // 게임 방 10 ~ 19
-    ServerInviteRoomResult invite_result = 12; // 게임 방 초대 결과
+    ServerCreateRoomResult create_room_result = 10;
+    ServerInviteRoomResult invite_room_result = 12; // 게임 방 초대 결과
     ServerUpdateRoom update_room = 13; // 유저 입장, 유저 나감, 유저 준비 완료, 유저 강퇴 등등
     ServerChatRoom chat_room = 14;
     ServerStartGame room_start_game = 15; // 게임 방에서 게임 시작을 한 경우
@@ -177,7 +178,16 @@ message ServerInviteRoomResult {
 }
 
 message ServerUpdateRoom {
+  Common.RoomInfo updated_room = 1;
+}
 
+message ServerCreateRoomResult {
+  enum Result {
+    FAILURE = 0;
+    SUCCESS = 1;
+  }
+  Result result = 1;
+  Common.RoomInfo room_info = 2;
 }
 
 message ServerChatRoom {
@@ -186,5 +196,17 @@ message ServerChatRoom {
 
 message ServerStartGame {
 
+}
+
+message Common {
+  message UserInfo {
+    int64 accountId = 1;
+  }
+
+  message RoomInfo {
+    int32 room_id = 1;
+    string title = 2;
+    int32 user_count = 3;
+  }
 }
 

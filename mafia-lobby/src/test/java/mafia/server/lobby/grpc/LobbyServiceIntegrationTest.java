@@ -246,6 +246,50 @@ class LobbyServiceIntegrationTest {
         requestObserver.onCompleted();
     }
 
+    @Test
+    @DisplayName("로비에서 방을 만들 수 있다")
+    void clientCreateRoom() throws Exception {
+        // given
+        StreamRecorder<LobbyServerMessage> responseObserver = StreamRecorder.create();
+        StreamObserver<LobbyClientMessage> requestObserver = stub.handleCommunication(responseObserver);
+        String title = "test room title";
+
+        LobbyClientMessage connectMessage = LobbyClientMessage.newBuilder()
+                .setConnect(ClientConnect.getDefaultInstance())
+                .build();
+        LobbyClientMessage setUserStatusMessage = LobbyClientMessage.newBuilder()
+                .setSetUserStatus(ClientSetUserStatus.newBuilder()
+                        .setUserStatus(UserStatus.LOBBY)
+                        .build())
+                .build();
+        LobbyClientMessage createRoomMessage = LobbyClientMessage.newBuilder()
+                .setCreateRoom(ClientCreateRoom.newBuilder()
+                        .setTitle(title)
+                        .build())
+                .build();
+
+        // when
+        requestObserver.onNext(connectMessage);
+        requestObserver.onNext(setUserStatusMessage);
+        requestObserver.onNext(createRoomMessage);
+        await()
+                .during(Duration.ofSeconds(1))
+                .until(() -> {
+                    if (lobbyClientManager.getClient(testAccountId).isEmpty()) {
+                        return false;
+                    }
+                    return lobbyClientManager.getClient(testAccountId).get().getUserStatus() == UserStatus.ROOM;
+                });
+
+        // then
+        List<LobbyServerMessage> serverMessages = responseObserver.getValues();
+        assertThat(serverMessages).hasSize(1);
+        ServerCreateRoomResult createRoomResult = serverMessages.getFirst().getCreateRoomResult();
+        assertThat(createRoomResult.getResult()).isEqualTo(ServerCreateRoomResult.Result.SUCCESS);
+        assertThat(createRoomResult.getRoomInfo().getTitle()).isEqualTo(title);
+        requestObserver.onCompleted();
+    }
+
     private User createUser(Long accountId, String nickname) {
         return User.builder()
                 .accountId(accountId)
