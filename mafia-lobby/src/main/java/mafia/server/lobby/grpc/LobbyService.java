@@ -15,6 +15,7 @@ import mafia.server.lobby.service.UserService;
 import org.springframework.grpc.server.service.GrpcService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @GrpcService(interceptors = JwtInterceptor.class)
@@ -80,9 +81,9 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
             Long accountId = getAccountId();
             log.debug("handleSetUserStatus accountId={}, setUserStatus={}", accountId, setUserStatus);
 
-            LobbyClient lobbyClient = lobbyClientManager.getClient(accountId)
+            LobbyClient client = lobbyClientManager.getClient(accountId)
                     .orElseThrow();
-            lobbyClient.setUserStatus(setUserStatus.getUserStatus());
+            updateUserStatus(client, setUserStatus.getUserStatus());
         }
 
         private void handleChatAll(ClientChatAll chatAll) {
@@ -139,32 +140,45 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
             }
 
             Room room = roomManager.createRoom(createRoom.getTitle(), client);
-            client.setUserStatus(UserStatus.ROOM);
+            updateUserStatus(client, UserStatus.ROOM);
             LobbyServerMessage createResultMessage = LobbyServerMessage.newBuilder()
                     .setCreateRoomResult(ServerCreateRoomResult.newBuilder()
                             .setResult(ServerCreateRoomResult.Result.SUCCESS)
-                            .setRoomInfo(Common.RoomInfo.newBuilder()
-                                    .setRoomId(room.getId())
-                                    .setTitle(room.getTitle())
-                                    .setUserCount(room.getUserCount())
-                                    .build())
+                            .setRoomInfo(room.toRoomInfo())
                             .build())
                     .build();
             client.sendMessage(createResultMessage);
-            handleUpdateRoomList(room);
+            handleServerUpdateRoomList(room);
         }
 
-        private void handleUpdateRoomList(Room room) {
+        // 유저가 로비에 존재하는 방 목록이 필요한 경우
+        private void handleServerRoomList(LobbyClient client, List<Room> rooms) {
+            LobbyServerMessage roomListMessage = LobbyServerMessage.newBuilder()
+                    .setRoomList(ServerRoomList.newBuilder()
+                            .addAllRoomList(rooms.stream()
+                                    .map(Room::toRoomInfo)
+                                    .toList())
+                            .build())
+                    .build();
+            client.sendMessage(roomListMessage);
+        }
+
+        // 특정 방에 유저가 들어가거나 나가서 변동이 발생한 경우 로비에 있는 유저에게 업데이트 된 정보를 뿌린다.
+        private void handleServerUpdateRoomList(Room room) {
             LobbyServerMessage updatedRoomMessage = LobbyServerMessage.newBuilder()
                     .setUpdateRoomList(ServerUpdateRoomList.newBuilder()
-                            .setUpdatedRoom(Common.RoomInfo.newBuilder()
-                                    .setRoomId(room.getId())
-                                    .setTitle(room.getTitle())
-                                    .setUserCount(room.getUserCount())
-                                    .build())
+                            .setUpdatedRoom(room.toRoomInfo())
                             .build())
                     .build();
             lobbyClientManager.broadcastLobby(updatedRoomMessage);
+        }
+
+        // 유저의 위치가 로비로 변경될 경우 로비에 존재하는 방 정보가 필요하므로 방 정보를 뿌린다.
+        private void updateUserStatus(LobbyClient client, UserStatus userStatus) {
+            client.setUserStatus(userStatus);
+            if (userStatus.equals(UserStatus.LOBBY)) {
+                handleServerRoomList(client, roomManager.getRooms());
+            }
         }
     }
 }

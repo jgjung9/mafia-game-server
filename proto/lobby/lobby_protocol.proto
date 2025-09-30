@@ -166,18 +166,11 @@ message ServerChatDirect {
 }
 
 message ServerRoomList {
-
+  repeated Common.RoomInfo room_list = 1;
 }
 
 message ServerUpdateRoomList {
   Common.RoomInfo updated_room = 1;
-}
-
-message ServerInviteRoomResult {
-
-}
-
-message ServerUpdateRoom {
 }
 
 message ServerCreateRoomResult {
@@ -187,6 +180,13 @@ message ServerCreateRoomResult {
   }
   Result result = 1;
   Common.RoomInfo room_info = 2;
+}
+
+message ServerInviteRoomResult {
+
+}
+
+message ServerUpdateRoom {
 }
 
 message ServerChatRoom {
