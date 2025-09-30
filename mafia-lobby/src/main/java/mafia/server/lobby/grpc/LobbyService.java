@@ -151,8 +151,20 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                             .build())
                     .build();
             client.sendMessage(createResultMessage);
+            handleUpdateRoom(room);
+        }
 
-            // TODO: 로비에 있는 유저들에게 방 생성을 알린다.
+        private void handleUpdateRoom(Room room) {
+            LobbyServerMessage updatedRoomMessage = LobbyServerMessage.newBuilder()
+                    .setUpdateRoom(ServerUpdateRoom.newBuilder()
+                            .setUpdatedRoom(Common.RoomInfo.newBuilder()
+                                    .setRoomId(room.getId())
+                                    .setTitle(room.getTitle())
+                                    .setUserCount(room.getUserCount())
+                                    .build())
+                            .build())
+                    .build();
+            lobbyClientManager.broadcastLobby(updatedRoomMessage);
         }
     }
 }
