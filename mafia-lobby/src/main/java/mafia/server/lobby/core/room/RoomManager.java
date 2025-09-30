@@ -47,4 +47,8 @@ public class RoomManager {
     public List<Room> getRooms() {
         return rooms.values().stream().toList();
     }
+
+    public void registerUser(Long accountId, int roomId) {
+        userRoomMap.put(accountId, roomId);
+    }
 }

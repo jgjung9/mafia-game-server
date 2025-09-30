@@ -31,13 +31,17 @@ public class Room {
         this.hostId = creator.getAccountId();
         this.roomManager = roomManager;
         members.put(creator.getAccountId(), creator);
+        roomManager.registerUser(creator.getAccountId(), id);
     }
 
     public synchronized boolean enter(LobbyClient client) {
         if (getUserCount() >= DEFAULT_MAX_USER_COUNT) {
             return false;
         }
+
         members.put(client.getAccountId(), client);
+        roomManager.registerUser(client.getAccountId(), id);
+
         // 방에 있는 사람들에게 입장을 알린다.
         LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
                 .setTimestamp(ProtobufUtils.toTimestamp(LocalDateTime.now()))
