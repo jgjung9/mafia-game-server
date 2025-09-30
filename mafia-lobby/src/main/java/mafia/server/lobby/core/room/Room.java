@@ -6,6 +6,7 @@ import mafia.server.lobby.common.ProtobufUtils;
 import mafia.server.lobby.core.LobbyClient;
 import mafia.server.lobby.protocol.Common;
 import mafia.server.lobby.protocol.LobbyServerMessage;
+import mafia.server.lobby.protocol.ServerUpdateRoom;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -17,11 +18,11 @@ public class Room {
     @Getter
     private final int id;
     @Getter
-    private final Long hostId;
-    private final Map<Long, LobbyClient> members = new ConcurrentHashMap<>();
+    private Long hostId;
     @Getter
     private String title;
     private final RoomManager roomManager;
+    private final Map<Long, LobbyClient> members = new ConcurrentHashMap<>();
     private final int DEFAULT_MAX_USER_COUNT = 8;
 
     public Room(int id, String title, LobbyClient creator, RoomManager roomManager) {
@@ -37,9 +38,14 @@ public class Room {
             return false;
         }
         members.put(client.getAccountId(), client);
-        // TODO: 방에 있는 사람들에게 입장을 알린다.
+        // 방에 있는 사람들에게 입장을 알린다.
         LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
                 .setTimestamp(ProtobufUtils.toTimestamp(LocalDateTime.now()))
+                .setUpdateRoom(ServerUpdateRoom.newBuilder()
+                        .setType(ServerUpdateRoom.Type.ENTER)
+                        .setAccountId(client.getAccountId())
+                        .setNickname(client.getUserDto().nickname())
+                        .build())
                 .build();
         broadcast(serverMessage);
         return true;
@@ -48,20 +54,26 @@ public class Room {
     public synchronized void leave(Long accountId) {
         LobbyClient removed = members.remove(accountId);
 
-        // TODO: 유저가 떠났음을 알린다.
+        // 유저가 떠났음을 알린다.
         LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
                 .setTimestamp(ProtobufUtils.toTimestamp(LocalDateTime.now()))
+                .setUpdateRoom(ServerUpdateRoom.newBuilder()
+                        .setType(ServerUpdateRoom.Type.LEAVE)
+                        .setAccountId(removed.getAccountId())
+                        .setNickname(removed.getUserDto().nickname())
+                        .build())
                 .build();
         broadcast(serverMessage);
 
         // 유저의 수가 0이 될 경우 방을 삭제한다.
         if (getUserCount() == 0) {
             roomManager.removeRoom(getId());
-            return;
         }
 
-        // TODO: 떠난 유저가 방장이면 다른 유저로 방장이 변경된다
-
+        // 떠난 유저가 방장이면 다른 유저로 방장이 변경된다
+        if (removed.getAccountId().equals(hostId)) {
+            changeHost();
+        }
     }
 
     public void startGame() {
@@ -83,5 +95,19 @@ public class Room {
                 .setTitle(title)
                 .setUserCount(getUserCount())
                 .build();
+    }
+
+    private void changeHost() {
+        LobbyClient randomClient = members.values().stream().findAny()
+                .orElseThrow();
+        hostId = randomClient.getAccountId();
+        LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
+                .setUpdateRoom(ServerUpdateRoom.newBuilder()
+                        .setType(ServerUpdateRoom.Type.CHANGE_HOST)
+                        .setAccountId(randomClient.getAccountId())
+                        .setNickname(randomClient.getUserDto().nickname())
+                        .build())
+                .build();
+        broadcast(serverMessage);
     }
 }
