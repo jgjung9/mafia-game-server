@@ -53,6 +53,7 @@ public class Room {
 
     public synchronized void leave(Long accountId) {
         LobbyClient removed = members.remove(accountId);
+        roomManager.removeUser(removed.getAccountId());
 
         // 유저가 떠났음을 알린다.
         LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
@@ -102,6 +103,7 @@ public class Room {
                 .orElseThrow();
         hostId = randomClient.getAccountId();
         LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
+                .setTimestamp(ProtobufUtils.toTimestamp(LocalDateTime.now()))
                 .setUpdateRoom(ServerUpdateRoom.newBuilder()
                         .setType(ServerUpdateRoom.Type.CHANGE_HOST)
                         .setAccountId(randomClient.getAccountId())

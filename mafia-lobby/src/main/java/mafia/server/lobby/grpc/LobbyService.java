@@ -50,6 +50,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                 case CHAT_DIRECT -> handleChatDirect(lobbyClientMessage.getChatDirect());
                 case CREATE_ROOM -> handleCreateRoom(lobbyClientMessage.getCreateRoom());
                 case ENTER_ROOM -> handleEnterRoom(lobbyClientMessage.getEnterRoom());
+                case CHAT_ROOM -> handleChatRoom(lobbyClientMessage.getChatRoom());
             }
         }
 
@@ -70,6 +71,8 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
             return Long.valueOf(Constant.CLIENT_ID_CONTEXT_KEY.get());
         }
 
+        // 클라 요청 처리
+
         private void handleConnect(ClientConnect connect) {
             Long accountId = getAccountId();
             log.debug("handleConnect accountId={}", accountId);
@@ -83,8 +86,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
             LocalDateTime now = LocalDateTime.now();
             log.debug("handleSetUserStatus accountId={}, setUserStatus={}", accountId, setUserStatus);
 
-            LobbyClient client = lobbyClientManager.getClient(accountId)
-                    .orElseThrow();
+            LobbyClient client = getClient(accountId);
             updateUserStatus(client, setUserStatus.getUserStatus(), now);
         }
 
@@ -93,9 +95,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
             LocalDateTime now = LocalDateTime.now();
             log.debug("handleChatAll accountId={}, chatAll={}", accountId, chatAll);
 
-            UserDto userDto = lobbyClientManager.getClient(accountId)
-                    .orElseThrow()
-                    .getUserDto();
+            UserDto userDto = getClient(accountId).getUserDto();
 
             LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
                     .setTimestamp(ProtobufUtils.toTimestamp(now))
@@ -114,9 +114,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
             LocalDateTime now = LocalDateTime.now();
             log.debug("handleChatDirect accountId={}, chatDirect={}", accountId, chatDirect);
 
-            UserDto userDto = lobbyClientManager.getClient(accountId)
-                    .orElseThrow()
-                    .getUserDto();
+            UserDto userDto = getClient(accountId).getUserDto();
 
             LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
                     .setTimestamp(ProtobufUtils.toTimestamp(now))
@@ -135,8 +133,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
             LocalDateTime now = LocalDateTime.now();
             log.debug("handleCreateRoom accountId={}, createRoom={}", accountId, createRoom);
 
-            LobbyClient client = lobbyClientManager.getClient(accountId)
-                    .orElseThrow();
+            LobbyClient client = getClient(accountId);
             if (!client.getUserStatus().equals(UserStatus.LOBBY)) {
                 throw new IllegalStateException("Failed to create room: 유저가 로비에 있지 않습니다");
             }
@@ -159,9 +156,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
             LocalDateTime now = LocalDateTime.now();
             log.debug("handleEnterRoom accountId={}, enterRoom={}", accountId, enterRoom);
 
-            LobbyClient client = lobbyClientManager.getClient(accountId)
-                    .orElseThrow();
-
+            LobbyClient client = getClient(accountId);
             ServerEnterRoomResult.Type resultType;
             Room room = roomManager.getRoom(enterRoom.getRoomId()).orElse(null);
             if (room == null) {
@@ -178,6 +173,28 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                     .build();
             client.sendMessage(serverMessage);
         }
+
+        private void handleChatRoom(ClientChatRoom chatRoom) {
+            Long accountId = getAccountId();
+            LocalDateTime now = LocalDateTime.now();
+            log.debug("handleChatRoom accountId={}, chatRoom={}", accountId, chatRoom);
+
+            UserDto userDto = getClient(accountId).getUserDto();
+            Room room = roomManager.getRoomByAccountId(accountId)
+                    .orElseThrow();
+
+            LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
+                    .setTimestamp(ProtobufUtils.toTimestamp(now))
+                    .setChatRoom(ServerChatRoom.newBuilder()
+                            .setAccountId(accountId)
+                            .setNickname(userDto.nickname())
+                            .setMessage(chatRoom.getMessage())
+                            .build())
+                    .build();
+            room.broadcast(serverMessage);
+        }
+
+        // 상태 변화에 따라 서버 측에서 먼저 보내는 응답
 
         // 유저가 로비에 존재하는 방 목록이 필요한 경우
         private void handleServerRoomList(LobbyClient client, List<Room> rooms, LocalDateTime now) {
@@ -209,6 +226,11 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
             if (userStatus.equals(UserStatus.LOBBY)) {
                 handleServerRoomList(client, roomManager.getRooms(), now);
             }
+        }
+
+        private LobbyClient getClient(Long accountId) {
+            return lobbyClientManager.getClient(accountId)
+                    .orElseThrow();
         }
     }
 }

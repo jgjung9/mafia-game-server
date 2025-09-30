@@ -17,6 +17,7 @@ public class RoomManager {
     private AtomicInteger sequence = new AtomicInteger(0);
 
     private Map<Integer, Room> rooms = new ConcurrentHashMap<>();
+    private Map<Long, Integer> userRoomMap = new ConcurrentHashMap<>(); // key: accountId, value: roomId
 
     public Room createRoom(String title, LobbyClient creator) {
         int roomId = sequence.incrementAndGet();
@@ -28,6 +29,15 @@ public class RoomManager {
 
     public void removeRoom(Integer roomId) {
         rooms.remove(roomId);
+    }
+
+    public void removeUser(Long accountId) {
+        userRoomMap.remove(accountId);
+    }
+
+    public Optional<Room> getRoomByAccountId(Long accountId) {
+        Integer roomId = userRoomMap.getOrDefault(accountId, 0);
+        return roomId == 0 ? Optional.empty() : getRoom(roomId);
     }
 
     public Optional<Room> getRoom(Integer roomId) {
