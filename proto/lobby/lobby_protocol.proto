@@ -64,7 +64,7 @@ message ClientCreateRoom {
 }
 
 message ClientEnterRoom {
-
+  int32 room_id = 1;
 }
 
 message ClientInviteRoom {
@@ -120,6 +120,7 @@ message LobbyServerMessage {
 
     // 게임 방 10 ~ 19
     ServerCreateRoomResult create_room_result = 10;
+    ServerEnterRoomResult enter_room_result = 11;
     ServerInviteRoomResult invite_room_result = 12; // 게임 방 초대 결과
     ServerUpdateRoom update_room = 13; // 유저 입장, 유저 나감, 유저 준비 완료, 유저 강퇴 등등
     ServerChatRoom chat_room = 14;
@@ -174,12 +175,21 @@ message ServerUpdateRoomList {
 }
 
 message ServerCreateRoomResult {
-  enum Result {
+  enum Type {
     FAILURE = 0;
     SUCCESS = 1;
   }
-  Result result = 1;
+  Type type = 1;
   Common.RoomInfo room_info = 2;
+}
+
+message ServerEnterRoomResult {
+  enum Type {
+    FAILURE = 0;
+    SUCCESS = 1;
+    ALREADY_FULL = 2;
+  }
+  Type type = 1;
 }
 
 message ServerInviteRoomResult {

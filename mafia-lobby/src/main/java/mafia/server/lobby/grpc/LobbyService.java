@@ -143,7 +143,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
             updateUserStatus(client, UserStatus.ROOM);
             LobbyServerMessage createResultMessage = LobbyServerMessage.newBuilder()
                     .setCreateRoomResult(ServerCreateRoomResult.newBuilder()
-                            .setResult(ServerCreateRoomResult.Result.SUCCESS)
+                            .setType(ServerCreateRoomResult.Type.SUCCESS)
                             .setRoomInfo(room.toRoomInfo())
                             .build())
                     .build();
