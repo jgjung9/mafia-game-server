@@ -2,10 +2,12 @@ package mafia.server.lobby.core.room;
 
 import lombok.Getter;
 import lombok.ToString;
+import mafia.server.lobby.common.ProtobufUtils;
 import mafia.server.lobby.core.LobbyClient;
 import mafia.server.lobby.protocol.Common;
 import mafia.server.lobby.protocol.LobbyServerMessage;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,6 +22,7 @@ public class Room {
     @Getter
     private String title;
     private final RoomManager roomManager;
+    private final int DEFAULT_MAX_USER_COUNT = 8;
 
     public Room(int id, String title, LobbyClient creator, RoomManager roomManager) {
         this.id = id;
@@ -29,20 +32,25 @@ public class Room {
         members.put(creator.getAccountId(), creator);
     }
 
-    public synchronized void enterUser(LobbyClient user) {
-        members.put(user.getAccountId(), user);
-
-        // TODO: 서버 유저가 입장했음을 알린다.
+    public synchronized boolean enter(LobbyClient client) {
+        if (getUserCount() >= DEFAULT_MAX_USER_COUNT) {
+            return false;
+        }
+        members.put(client.getAccountId(), client);
+        // TODO: 방에 있는 사람들에게 입장을 알린다.
         LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
+                .setTimestamp(ProtobufUtils.toTimestamp(LocalDateTime.now()))
                 .build();
         broadcast(serverMessage);
+        return true;
     }
 
-    public synchronized void leaveUser(Long accountId) {
+    public synchronized void leave(Long accountId) {
         LobbyClient removed = members.remove(accountId);
 
         // TODO: 유저가 떠났음을 알린다.
         LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
+                .setTimestamp(ProtobufUtils.toTimestamp(LocalDateTime.now()))
                 .build();
         broadcast(serverMessage);
 

@@ -55,7 +55,7 @@ message ClientChatAll {
 }
 
 message ClientChatDirect {
-  int64 account_id = 1;
+  int64 account_id = 1; // 받는 대상
   string message = 2;
 }
 
@@ -80,7 +80,7 @@ message ClientAcceptInviteRoom {
 }
 
 message ClientChatRoom {
-
+  string message = 1;
 }
 
 message ClientLeaveRoom {
@@ -155,14 +155,14 @@ message ServerUpdateUserStatus {
 }
 
 message ServerChatAll {
-  int64 account_id = 1;
-  string nickname = 2;
+  int64 account_id = 1; // 보낸 대상
+  string nickname = 2; // 보낸 대상 닉네임
   string message = 3;
 }
 
 message ServerChatDirect {
-  int64 account_id = 1;
-  string nickname = 2;
+  int64 account_id = 1; // 보낸 대상
+  string nickname = 2; // 보낸 대상 닉네임
   string message = 3;
 }
 
@@ -188,6 +188,7 @@ message ServerEnterRoomResult {
     FAILURE = 0;
     SUCCESS = 1;
     ALREADY_FULL = 2;
+    NOT_FOUND = 3;
   }
   Type type = 1;
 }
@@ -197,10 +198,20 @@ message ServerInviteRoomResult {
 }
 
 message ServerUpdateRoom {
+  enum Type {
+    LEAVE = 0; // 퇴장
+    ENTER = 1; // 입장
+    KICK = 2; // 강퇴
+    READY = 3; // 준비 완료
+  }
+  Type type = 1;
+  int64 account_id = 2; // 어떤 유저 인지
 }
 
 message ServerChatRoom {
-
+  int64 account_id = 1;
+  string nickname = 2;
+  string message = 3;
 }
 
 message ServerStartGame {

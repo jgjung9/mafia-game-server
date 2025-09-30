@@ -285,7 +285,7 @@ class LobbyServiceIntegrationTest {
         List<LobbyServerMessage> serverMessages = responseObserver.getValues();
         assertThat(serverMessages).hasSize(1);
         ServerCreateRoomResult createRoomResult = serverMessages.getFirst().getCreateRoomResult();
-        assertThat(createRoomResult.getResult()).isEqualTo(ServerCreateRoomResult.Result.SUCCESS);
+        assertThat(createRoomResult.getType()).isEqualTo(ServerCreateRoomResult.Type.SUCCESS);
         assertThat(createRoomResult.getRoomInfo().getTitle()).isEqualTo(title);
         requestObserver.onCompleted();
     }
