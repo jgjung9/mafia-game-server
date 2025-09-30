@@ -170,7 +170,7 @@ message ServerRoomList {
 }
 
 message ServerUpdateRoomList {
-
+  Common.RoomInfo updated_room = 1;
 }
 
 message ServerInviteRoomResult {
@@ -178,7 +178,6 @@ message ServerInviteRoomResult {
 }
 
 message ServerUpdateRoom {
-  Common.RoomInfo updated_room = 1;
 }
 
 message ServerCreateRoomResult {

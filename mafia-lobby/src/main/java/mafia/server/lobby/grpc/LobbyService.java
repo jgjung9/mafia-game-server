@@ -151,12 +151,12 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                             .build())
                     .build();
             client.sendMessage(createResultMessage);
-            handleUpdateRoom(room);
+            handleUpdateRoomList(room);
         }
 
-        private void handleUpdateRoom(Room room) {
+        private void handleUpdateRoomList(Room room) {
             LobbyServerMessage updatedRoomMessage = LobbyServerMessage.newBuilder()
-                    .setUpdateRoom(ServerUpdateRoom.newBuilder()
+                    .setUpdateRoomList(ServerUpdateRoomList.newBuilder()
                             .setUpdatedRoom(Common.RoomInfo.newBuilder()
                                     .setRoomId(room.getId())
                                     .setTitle(room.getTitle())
