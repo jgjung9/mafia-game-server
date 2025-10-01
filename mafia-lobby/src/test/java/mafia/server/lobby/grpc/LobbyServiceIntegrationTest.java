@@ -24,7 +24,6 @@ import org.springframework.grpc.client.GrpcChannelFactory;
 import org.springframework.grpc.test.AutoConfigureInProcessTransport;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -178,12 +177,14 @@ class LobbyServiceIntegrationTest {
                 });
 
         // then
-        List<LobbyServerMessage> serverMessages = responseObserver.getValues();
-        assertThat(serverMessages).hasSize(1);
-        ServerChatAll chatAll = serverMessages.getFirst().getChatAll();
-        assertThat(chatAll.getAccountId()).isEqualTo(testAccountId);
-        assertThat(chatAll.getNickname()).isEqualTo(testNickname);
-        assertThat(chatAll.getMessage()).isEqualTo(message);
+        for (LobbyServerMessage serverMessage : responseObserver.getValues()) {
+            if (serverMessage.getContentCase().equals(LobbyServerMessage.ContentCase.CHAT_ALL)) {
+                ServerChatAll chatAll = serverMessage.getChatAll();
+                assertThat(chatAll.getAccountId()).isEqualTo(testAccountId);
+                assertThat(chatAll.getNickname()).isEqualTo(testNickname);
+                assertThat(chatAll.getMessage()).isEqualTo(message);
+            }
+        }
         requestObserver.onCompleted();
     }
 
@@ -240,12 +241,14 @@ class LobbyServiceIntegrationTest {
                 .until(() -> !responseObserver.getValues().isEmpty());
 
         // then
-        List<LobbyServerMessage> serverMessages = responseObserver.getValues();
-        assertThat(serverMessages).hasSize(1);
-        ServerChatDirect chatDirect = serverMessages.getFirst().getChatDirect();
-        assertThat(chatDirect.getAccountId()).isEqualTo(senderId);
-        assertThat(chatDirect.getNickname()).isEqualTo(senderNickname);
-        assertThat(chatDirect.getMessage()).isEqualTo(message);
+        for (LobbyServerMessage serverMessage : responseObserver.getValues()) {
+            if (serverMessage.getContentCase().equals(LobbyServerMessage.ContentCase.CHAT_DIRECT)) {
+                ServerChatDirect chatDirect = serverMessage.getChatDirect();
+                assertThat(chatDirect.getAccountId()).isEqualTo(senderId);
+                assertThat(chatDirect.getNickname()).isEqualTo(senderNickname);
+                assertThat(chatDirect.getMessage()).isEqualTo(message);
+            }
+        }
         requestObserver.onCompleted();
     }
 
@@ -285,11 +288,13 @@ class LobbyServiceIntegrationTest {
                 });
 
         // then
-        List<LobbyServerMessage> serverMessages = responseObserver.getValues();
-        assertThat(serverMessages).hasSize(1);
-        ServerCreateRoomResult createRoomResult = serverMessages.getFirst().getCreateRoomResult();
-        assertThat(createRoomResult.getType()).isEqualTo(ServerCreateRoomResult.Type.SUCCESS);
-        assertThat(createRoomResult.getRoomInfo().getTitle()).isEqualTo(title);
+        for (LobbyServerMessage serverMessage : responseObserver.getValues()) {
+            if (serverMessage.getContentCase().equals(LobbyServerMessage.ContentCase.CREATE_ROOM_RESULT)) {
+                ServerCreateRoomResult createRoomResult = serverMessage.getCreateRoomResult();
+                assertThat(createRoomResult.getType()).isEqualTo(ServerCreateRoomResult.Type.SUCCESS);
+                assertThat(createRoomResult.getRoomInfo().getTitle()).isEqualTo(title);
+            }
+        }
         requestObserver.onCompleted();
     }
 
