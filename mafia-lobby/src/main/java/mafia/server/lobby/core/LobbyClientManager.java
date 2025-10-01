@@ -1,10 +1,12 @@
 package mafia.server.lobby.core;
 
+import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import mafia.server.lobby.protocol.LobbyServerMessage;
 import mafia.server.lobby.protocol.UserStatus;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,11 +22,8 @@ public class LobbyClientManager {
     }
 
     public synchronized void removeClient(Long accountId) {
-        log.info("Client Disconnect: accountId={}", accountId);
-        LobbyClient removed = clients.remove(accountId);
-        if (removed != null) {
-            removed.close();
-        }
+        log.info("LobbyClientManager remove client: accountId={}", accountId);
+        clients.remove(accountId);
     }
 
     public Optional<LobbyClient> getClient(Long accountId) {
@@ -41,10 +40,13 @@ public class LobbyClientManager {
         getClient(accountId).ifPresent(client -> client.sendMessage(serverMessage));
     }
 
-    public synchronized void removeAll() {
-        for (Long accountId : clients.keySet()) {
-            LobbyClient removed = clients.remove(accountId);
-            removed.close();
-        }
+    public void removeAll() {
+        List.copyOf(clients.keySet()).forEach(accountId -> getClient(accountId)
+                .ifPresent(LobbyClient::close));
+    }
+
+    @PreDestroy
+    public void destroy() {
+        removeAll();
     }
 }

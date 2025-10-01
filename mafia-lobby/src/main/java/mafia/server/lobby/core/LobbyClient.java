@@ -4,6 +4,7 @@ import io.grpc.stub.StreamObserver;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import mafia.server.lobby.core.room.RoomManager;
 import mafia.server.lobby.protocol.LobbyServerMessage;
 import mafia.server.lobby.protocol.UserStatus;
 
@@ -19,11 +20,15 @@ public class LobbyClient {
     private final StreamObserver<LobbyServerMessage> observer;
     @Setter
     private UserStatus userStatus;
+    private final LobbyClientManager lobbyClientManager;
+    private final RoomManager roomManager;
 
-    public LobbyClient(Long accountId, UserDto userDto, StreamObserver<LobbyServerMessage> observer) {
+    public LobbyClient(Long accountId, UserDto userDto, StreamObserver<LobbyServerMessage> observer, LobbyClientManager lobbyClientManager, RoomManager roomManager) {
         this.accountId = accountId;
         this.userDto = userDto;
         this.observer = observer;
+        this.lobbyClientManager = lobbyClientManager;
+        this.roomManager = roomManager;
         userStatus = UserStatus.PENDING;
     }
 
@@ -37,5 +42,8 @@ public class LobbyClient {
 
     public void close() {
         userStatus = UserStatus.OFFLINE;
+        lobbyClientManager.removeClient(accountId);
+        roomManager.removeUser(accountId);
+        observer.onCompleted();
     }
 }

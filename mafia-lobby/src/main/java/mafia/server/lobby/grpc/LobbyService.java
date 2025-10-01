@@ -53,6 +53,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                 case CHAT_ROOM -> handleChatRoom(lobbyClientMessage.getChatRoom());
                 case LEAVE_ROOM -> handleLeaveRoom(lobbyClientMessage.getLeaveRoom());
                 case INVITE_ROOM -> handleInviteRoom(lobbyClientMessage.getInviteRoom());
+                case REPLY_INVITE_ROOM -> handleReplyInviteRoom(lobbyClientMessage.getReplyInviteRoom());
             }
         }
 
@@ -62,22 +63,19 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
             Long accountId = getAccountId();
             LobbyClient client = getClient(accountId);
             handleDisconnect(client, ServerDisconnect.Type.SERVER);
-            lobbyClientManager.removeClient(accountId);
+            client.close();
         }
 
         @Override
         public void onCompleted() {
-            lobbyClientManager.removeClient(getAccountId());
-            responseObserver.onCompleted();
+            getClient(getAccountId()).close();
         }
 
         private Long getAccountId() {
             return Long.valueOf(Constant.CLIENT_ID_CONTEXT_KEY.get());
         }
 
-
         // 클라 요청 처리
-
         private void handleConnect(ClientConnect connect) {
             Long accountId = getAccountId();
             LocalDateTime now = LocalDateTime.now();
@@ -89,7 +87,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                         handleDisconnect(client, ServerDisconnect.Type.OVERLAP);
                         // HACK: 이렇게 써도 되는지 확인 필요
                         onCompleted();
-                    }, () -> lobbyClientManager.addClient(accountId, new LobbyClient(accountId, userDto, responseObserver)));
+                    }, () -> lobbyClientManager.addClient(accountId, new LobbyClient(accountId, userDto, responseObserver, lobbyClientManager, roomManager)));
         }
 
         private void handleSetUserStatus(ClientSetUserStatus setUserStatus) {
@@ -249,6 +247,30 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                                 .build();
                         receiverClient.sendMessage(serverMessage);
                     });
+        }
+
+        private void handleReplyInviteRoom(ClientReplyInviteRoom replyInviteRoom) {
+            Long accountId = getAccountId();
+            LocalDateTime now = LocalDateTime.now();
+            log.debug("handleReplyInviteRoom accountId={}, replyInviteRoom={}", accountId, replyInviteRoom);
+
+            LobbyClient client = getClient(accountId);
+            Room room = roomManager.getRoom(replyInviteRoom.getRoomId()).orElse(null);
+
+            ServerReplyInviteRoomResult.Type resultType = ServerReplyInviteRoomResult.Type.SUCCESS;
+            if (room == null) {
+                resultType = ServerReplyInviteRoomResult.Type.EXPIRED;
+            } else if (!room.enter(client)) {
+                resultType = ServerReplyInviteRoomResult.Type.ALREADY_FULL;
+            }
+
+            LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
+                    .setTimestamp(ProtobufUtils.toTimestamp(now))
+                    .setReplyInviteRoomResult(ServerReplyInviteRoomResult.newBuilder()
+                            .setType(resultType)
+                            .build())
+                    .build();
+            client.sendMessage(serverMessage);
         }
 
         // 상태 변화에 따라 서버 측에서 먼저 보내는 응답

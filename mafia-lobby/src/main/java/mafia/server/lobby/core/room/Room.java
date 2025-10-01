@@ -38,7 +38,7 @@ public class Room {
     }
 
     public synchronized boolean enter(LobbyClient client) {
-        if (getUserCount() >= DEFAULT_MAX_USER_COUNT) {
+        if (isFull()) {
             return false;
         }
 
@@ -119,6 +119,10 @@ public class Room {
 
     public boolean isHost(Long accountId) {
         return hostId.equals(accountId);
+    }
+
+    public boolean isFull() {
+        return getUserCount() == DEFAULT_MAX_USER_COUNT;
     }
 
     private void changeHost() {

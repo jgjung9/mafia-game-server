@@ -32,7 +32,11 @@ public class RoomManager {
     }
 
     public void removeUser(Long accountId) {
-        userRoomMap.remove(accountId);
+        if (userRoomMap.containsKey(accountId)) {
+            Integer roomId = userRoomMap.remove(accountId);
+            getRoom(roomId).ifPresent(room -> room.leave(accountId));
+            log.info("RoomManager room {} remove user: accountId={}", roomId, accountId);
+        }
     }
 
     public Optional<Room> getRoomByAccountId(Long accountId) {

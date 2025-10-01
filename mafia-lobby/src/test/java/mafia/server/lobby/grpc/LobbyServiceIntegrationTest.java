@@ -12,6 +12,7 @@ import mafia.server.lobby.common.Constant;
 import mafia.server.lobby.core.LobbyClient;
 import mafia.server.lobby.core.LobbyClientManager;
 import mafia.server.lobby.core.UserDto;
+import mafia.server.lobby.core.room.RoomManager;
 import mafia.server.lobby.protocol.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +39,8 @@ class LobbyServiceIntegrationTest {
     private GrpcChannelFactory grpcChannelFactory;
     @Autowired
     private LobbyClientManager lobbyClientManager;
+    @Autowired
+    private RoomManager roomManager;
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -211,7 +214,7 @@ class LobbyServiceIntegrationTest {
                         .setMessage(message)
                         .build())
                 .build();
-        lobbyClientManager.addClient(senderId, new LobbyClient(senderId, new UserDto(2L, senderNickname), senderResponseObserver));
+        lobbyClientManager.addClient(senderId, new LobbyClient(senderId, new UserDto(2L, senderNickname), senderResponseObserver, lobbyClientManager, roomManager));
 
         // when
         requestObserver.onNext(connectMessage);
