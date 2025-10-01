@@ -54,6 +54,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                 case LEAVE_ROOM -> handleLeaveRoom(lobbyClientMessage.getLeaveRoom());
                 case INVITE_ROOM -> handleInviteRoom(lobbyClientMessage.getInviteRoom());
                 case REPLY_INVITE_ROOM -> handleReplyInviteRoom(lobbyClientMessage.getReplyInviteRoom());
+                case READY_ROOM -> handleReadyRoom(lobbyClientMessage.getReadyRoom());
             }
         }
 
@@ -271,6 +272,15 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                             .build())
                     .build();
             client.sendMessage(serverMessage);
+        }
+
+        private void handleReadyRoom(ClientReadyRoom readyRoom) {
+            Long accountId = getAccountId();
+            LocalDateTime now = LocalDateTime.now();
+            log.debug("handleReadyRoom accountId={}, readyRoom={}", accountId, readyRoom);
+
+            Room room = roomManager.getRoomByAccountId(accountId).orElseThrow();
+            room.changeUserReady(accountId);
         }
 
         // 상태 변화에 따라 서버 측에서 먼저 보내는 응답

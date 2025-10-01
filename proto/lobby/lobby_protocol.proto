@@ -211,11 +211,11 @@ message ServerUpdateRoom {
     ENTER = 1; // 입장
     KICK = 2; // 강퇴
     READY = 3; // 준비 완료
-    CHANGE_HOST = 4; // 방장 변경
+    NOT_READY = 4;
+    CHANGE_HOST = 5; // 방장 변경
   }
   Type type = 1;
   int64 account_id = 2; // 어떤 유저 인지
-  string nickname = 3;
 }
 
 message ServerChatRoom {

@@ -52,7 +52,6 @@ public class Room {
                 .setUpdateRoom(ServerUpdateRoom.newBuilder()
                         .setType(ServerUpdateRoom.Type.ENTER)
                         .setAccountId(client.getAccountId())
-                        .setNickname(client.getUserDto().nickname())
                         .build())
                 .build();
         broadcast(serverMessage);
@@ -70,7 +69,6 @@ public class Room {
                 .setUpdateRoom(ServerUpdateRoom.newBuilder()
                         .setType(ServerUpdateRoom.Type.LEAVE)
                         .setAccountId(removed.getAccountId())
-                        .setNickname(removed.getUserDto().nickname())
                         .build())
                 .build();
         broadcast(serverMessage);
@@ -90,13 +88,48 @@ public class Room {
         // TODO: 게임을 시작한다
     }
 
+    public void broadcast(LobbyServerMessage serverMessage) {
+        members.values()
+                .forEach(client -> client.sendMessage(serverMessage));
+    }
+
+    public void changeUserReady(Long accountId) {
+        boolean isReady = !readyMap.get(accountId);
+        readyMap.put(accountId, isReady);
+
+        LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
+                .setTimestamp(ProtobufUtils.toTimestamp(LocalDateTime.now()))
+                .setUpdateRoom(ServerUpdateRoom.newBuilder()
+                        .setType(isReady ? ServerUpdateRoom.Type.READY : ServerUpdateRoom.Type.NOT_READY)
+                        .setAccountId(accountId)
+                        .build())
+                .build();
+    }
+
+    private void changeHost() {
+        LobbyClient randomClient = members.values().stream().findAny()
+                .orElseThrow();
+        hostId = randomClient.getAccountId();
+        LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
+                .setTimestamp(ProtobufUtils.toTimestamp(LocalDateTime.now()))
+                .setUpdateRoom(ServerUpdateRoom.newBuilder()
+                        .setType(ServerUpdateRoom.Type.CHANGE_HOST)
+                        .setAccountId(randomClient.getAccountId())
+                        .build())
+                .build();
+        broadcast(serverMessage);
+    }
+
     public int getUserCount() {
         return members.size();
     }
 
-    public void broadcast(LobbyServerMessage serverMessage) {
-        members.values()
-                .forEach(client -> client.sendMessage(serverMessage));
+    public boolean isHost(Long accountId) {
+        return hostId.equals(accountId);
+    }
+
+    public boolean isFull() {
+        return getUserCount() == DEFAULT_MAX_USER_COUNT;
     }
 
     public Common.RoomInfo toRoomInfo() {
@@ -112,31 +145,8 @@ public class Room {
                 .map(client -> Common.RoomUser.newBuilder()
                         .setAccountId(client.getAccountId())
                         .setHost(isHost(client.getAccountId()))
-                        .setReady(readyMap.getOrDefault(client.getAccountId(), false))
+                        .setReady(readyMap.get(client.getAccountId()))
                         .build())
                 .toList();
-    }
-
-    public boolean isHost(Long accountId) {
-        return hostId.equals(accountId);
-    }
-
-    public boolean isFull() {
-        return getUserCount() == DEFAULT_MAX_USER_COUNT;
-    }
-
-    private void changeHost() {
-        LobbyClient randomClient = members.values().stream().findAny()
-                .orElseThrow();
-        hostId = randomClient.getAccountId();
-        LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
-                .setTimestamp(ProtobufUtils.toTimestamp(LocalDateTime.now()))
-                .setUpdateRoom(ServerUpdateRoom.newBuilder()
-                        .setType(ServerUpdateRoom.Type.CHANGE_HOST)
-                        .setAccountId(randomClient.getAccountId())
-                        .setNickname(randomClient.getUserDto().nickname())
-                        .build())
-                .build();
-        broadcast(serverMessage);
     }
 }
