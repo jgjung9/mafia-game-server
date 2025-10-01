@@ -59,6 +59,8 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
         public void onError(Throwable throwable) {
             log.info("Grpc LobbyService Error: {}", throwable.getMessage(), throwable);
             Long accountId = getAccountId();
+            LobbyClient client = getClient(accountId);
+            handleDisconnect(client, ServerDisconnect.Type.SERVER);
             lobbyClientManager.removeClient(accountId);
         }
 
@@ -76,10 +78,16 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
         // 클라 요청 처리
         private void handleConnect(ClientConnect connect) {
             Long accountId = getAccountId();
+            LocalDateTime now = LocalDateTime.now();
             log.debug("handleConnect accountId={}", accountId);
 
             UserDto userDto = userService.findByAccountId(accountId);
-            lobbyClientManager.addClient(accountId, new LobbyClient(accountId, userDto, responseObserver));
+            lobbyClientManager.getClient(accountId)
+                    .ifPresentOrElse(client -> {
+                        handleDisconnect(client, ServerDisconnect.Type.OVERLAP);
+                        // HACK: 이렇게 써도 되는지 확인 필요
+                        onCompleted();
+                    }, () -> lobbyClientManager.addClient(accountId, new LobbyClient(accountId, userDto, responseObserver)));
         }
 
         private void handleSetUserStatus(ClientSetUserStatus setUserStatus) {
@@ -166,18 +174,19 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                 resultType = room.enter(client) ? ServerEnterRoomResult.Type.SUCCESS : ServerEnterRoomResult.Type.ALREADY_FULL;
             }
 
-            LobbyServerMessage.Builder messageBuilder = LobbyServerMessage.newBuilder()
-                    .setTimestamp(ProtobufUtils.toTimestamp(now));
-
+            ServerEnterRoomResult.Builder resultBuilder = ServerEnterRoomResult.newBuilder()
+                    .setType(resultType);
             if (resultType.equals(ServerEnterRoomResult.Type.SUCCESS)) {
-                messageBuilder.setEnterRoomResult(ServerEnterRoomResult.newBuilder()
-                        .setType(resultType)
-                        .setRoomDetail(Common.RoomDetail.newBuilder()
-                                .addAllUsers(room.getRoomUsers())
-                                .build())
+                resultBuilder.setRoomDetail(Common.RoomDetail.newBuilder()
+                        .setRoomInfo(room.toRoomInfo())
+                        .addAllUsers(room.getRoomUsers())
                         .build());
             }
-            client.sendMessage(messageBuilder.build());
+            LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
+                    .setTimestamp(ProtobufUtils.toTimestamp(now))
+                    .setEnterRoomResult(resultBuilder.build())
+                    .build();
+            client.sendMessage(serverMessage);
         }
 
         private void handleChatRoom(ClientChatRoom chatRoom) {
@@ -213,6 +222,16 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
         }
 
         // 상태 변화에 따라 서버 측에서 먼저 보내는 응답
+
+        private void handleDisconnect(LobbyClient client, ServerDisconnect.Type type) {
+            LobbyServerMessage disconnectMessage = LobbyServerMessage.newBuilder()
+                    .setTimestamp(ProtobufUtils.toTimestamp(LocalDateTime.now()))
+                    .setDisconnect(ServerDisconnect.newBuilder()
+                            .setType(type)
+                            .build())
+                    .build();
+            client.sendMessage(disconnectMessage);
+        }
 
         // 유저가 로비에 존재하는 방 목록이 필요한 경우
         private void handleServerRoomList(LobbyClient client, List<Room> rooms, LocalDateTime now) {

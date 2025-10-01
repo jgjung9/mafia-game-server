@@ -234,7 +234,8 @@ message Common {
 
   message RoomUser {
     int64 account_id = 1;
-    bool ready = 2;
+    bool host = 2;
+    bool ready = 3;
   }
 
   message RoomDetail {

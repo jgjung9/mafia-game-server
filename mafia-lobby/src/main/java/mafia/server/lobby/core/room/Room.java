@@ -111,6 +111,7 @@ public class Room {
         return members.values().stream()
                 .map(client -> Common.RoomUser.newBuilder()
                         .setAccountId(client.getAccountId())
+                        .setHost(isHost(client.getAccountId()))
                         .setReady(readyMap.getOrDefault(client.getAccountId(), false))
                         .build())
                 .toList();
@@ -129,5 +130,9 @@ public class Room {
                         .build())
                 .build();
         broadcast(serverMessage);
+    }
+
+    private boolean isHost(Long accountId) {
+        return hostId.equals(accountId);
     }
 }
