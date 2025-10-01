@@ -117,6 +117,10 @@ public class Room {
                 .toList();
     }
 
+    public boolean isHost(Long accountId) {
+        return hostId.equals(accountId);
+    }
+
     private void changeHost() {
         LobbyClient randomClient = members.values().stream().findAny()
                 .orElseThrow();
@@ -130,9 +134,5 @@ public class Room {
                         .build())
                 .build();
         broadcast(serverMessage);
-    }
-
-    private boolean isHost(Long accountId) {
-        return hostId.equals(accountId);
     }
 }

@@ -52,6 +52,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                 case ENTER_ROOM -> handleEnterRoom(lobbyClientMessage.getEnterRoom());
                 case CHAT_ROOM -> handleChatRoom(lobbyClientMessage.getChatRoom());
                 case LEAVE_ROOM -> handleLeaveRoom(lobbyClientMessage.getLeaveRoom());
+                case INVITE_ROOM -> handleInviteRoom(lobbyClientMessage.getInviteRoom());
             }
         }
 
@@ -76,6 +77,7 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
 
 
         // 클라 요청 처리
+
         private void handleConnect(ClientConnect connect) {
             Long accountId = getAccountId();
             LocalDateTime now = LocalDateTime.now();
@@ -219,6 +221,34 @@ public class LobbyService extends LobbyServiceGrpc.LobbyServiceImplBase {
                     .orElseThrow();
             room.leave(accountId);
             updateUserStatus(client, UserStatus.LOBBY, now);
+        }
+
+        private void handleInviteRoom(ClientInviteRoom inviteRoom) {
+            Long accountId = getAccountId();
+            LocalDateTime now = LocalDateTime.now();
+            log.debug("handleInviteRoom accountId={}, inviteRoom={}", accountId, inviteRoom);
+
+            LobbyClient senderClient = getClient(accountId);
+            Room room = roomManager.getRoomByAccountId(accountId).orElseThrow();
+            if (!room.isHost(accountId)) {
+                return;
+            }
+
+            lobbyClientManager.getClient(inviteRoom.getAccountId())
+                    .ifPresent(receiverClient -> {
+                        if (!receiverClient.getUserStatus().equals(UserStatus.LOBBY)) {
+                            return;
+                        }
+                        LobbyServerMessage serverMessage = LobbyServerMessage.newBuilder()
+                                .setTimestamp(ProtobufUtils.toTimestamp(now))
+                                .setInviteRoom(ServerInviteRoom.newBuilder()
+                                        .setAccountId(accountId)
+                                        .setNickname(senderClient.getUserDto().nickname())
+                                        .setRoomId(room.getId())
+                                        .build())
+                                .build();
+                        receiverClient.sendMessage(serverMessage);
+                    });
         }
 
         // 상태 변화에 따라 서버 측에서 먼저 보내는 응답

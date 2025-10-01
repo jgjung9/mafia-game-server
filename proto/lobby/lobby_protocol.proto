@@ -29,12 +29,11 @@ message LobbyClientMessage {
     ClientCreateRoom create_room = 10;
     ClientEnterRoom enter_room = 11;
     ClientInviteRoom invite_room = 12; // 게임 방 초대
-    ClientRejectInviteRoom reject_invite_room = 13; // 게임 방 초대 거절
-    ClientAcceptInviteRoom accept_invite_room = 14; // 게임 방 초대 수락
-    ClientChatRoom chat_room = 15; // 게임 방내 채팅
-    ClientLeaveRoom leave_room = 16; // 게임 방 나가기
-    ClientReadyRoom ready_room = 17; // 게임 방 준비 완료
-    ClientStartRoom start_room = 18; // 방장의 게임 시작 하기
+    ClientReplyInviteRoom reply_invite_room = 13; // 게임 방 초대에 대한 응답 (수락/거절)
+    ClientChatRoom chat_room = 14; // 게임 방내 채팅
+    ClientLeaveRoom leave_room = 15; // 게임 방 나가기
+    ClientReadyRoom ready_room = 16; // 게임 방 준비 완료
+    ClientStartRoom start_room = 17; // 방장의 게임 시작 하기
 
     // 매칭 20 ~ 29
     ClientRequestMatch request_match = 20; // 게임 매칭 요청
@@ -68,15 +67,12 @@ message ClientEnterRoom {
 }
 
 message ClientInviteRoom {
-
+  int64 account_id = 1;
 }
 
-message ClientRejectInviteRoom {
-
-}
-
-message ClientAcceptInviteRoom {
-
+message ClientReplyInviteRoom {
+  int32 room_id = 1;
+  bool accepted = 2;
 }
 
 message ClientChatRoom {
@@ -121,11 +117,11 @@ message LobbyServerMessage {
     // 게임 방 10 ~ 19
     ServerCreateRoomResult create_room_result = 10;
     ServerEnterRoomResult enter_room_result = 11;
-    ServerInviteRoomResult invite_room_result = 12; // 게임 방 초대 결과
-    ServerUpdateRoom update_room = 13; // 유저 입장, 유저 나감, 유저 준비 완료, 유저 강퇴 등등
-    ServerChatRoom chat_room = 14;
-    ServerStartGame room_start_game = 15; // 게임 방에서 게임 시작을 한 경우
-
+    ServerInviteRoom invite_room = 12;
+    ServerReplyInviteRoomResult reply_invite_room_result = 13;
+    ServerUpdateRoom update_room = 15; // 유저 입장, 유저 나감, 유저 준비 완료, 유저 강퇴 등등
+    ServerChatRoom chat_room = 16;
+    ServerStartGame room_start_game = 17; // 게임 방에서 게임 시작을 한 경우
 
     // 매칭 20 ~ 29
     ServerStartGame match_start_game = 20; // 매칭을 통해 게임 시작을 한경우
@@ -194,8 +190,19 @@ message ServerEnterRoomResult {
   Common.RoomDetail room_detail = 2;
 }
 
-message ServerInviteRoomResult {
+message ServerInviteRoom {
+  int64 account_id = 1;
+  string nickname = 2;
+  int32 room_id = 3;
+}
 
+message ServerReplyInviteRoomResult {
+  enum Type {
+    SUCCESS = 0;
+    ALREADY_FULL = 1; // 이미 가득 참
+    EXPIRED = 2; // 방이 존재하지 않음
+  }
+  Type type = 1;
 }
 
 message ServerUpdateRoom {
