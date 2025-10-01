@@ -1,11 +1,5 @@
 spring:
   datasource:
-    account:
-      url: jdbc:h2:mem:account
-      username: sa
-      password:
-      enabled: true
-
     game:
       url: jdbc:h2:mem:game
       username: sa
@@ -32,18 +26,9 @@ spring:
     console:
       enabled: false
 
-  data:
-    redis:
-      token:
-        host: localhost
-        port: 6379
-        enabled: true
-
 jwt:
   secret_key: d606a53ae647793f00d9e72598d28457dc9c51ad1f84e33dcb74233531515b11
-  #  초 단위로 설정
-  expiration_time: 3600
-  refresh_expiration_time: 1209600
+
 
 logging:
   level:
@@ -63,12 +48,6 @@ spring:
       on-profile: dev
 
   datasource:
-    account:
-      url: jdbc:mysql://${DB_ACCOUNT_URL:localhost:3306}/account
-      username: ${DB_ACCOUNT_USERNAME:root}
-      password: ${DB_ACCOUNT_PASSWORD:1234}
-      enabled: true
-
     game:
       url: jdbc:mysql://${DB_GAME_URL:localhost:3306}/game
       username: ${DB_GAME_USERNAME:root}
@@ -102,12 +81,6 @@ spring:
       on-profile: prod
 
   datasource:
-    account:
-      url: jdbc:mysql://${DB_ACCOUNT_URL:localhost:3306}/account
-      username: ${DB_ACCOUNT_USERNAME:root}
-      password: ${DB_ACCOUNT_PASSWORD:1234}
-      enabled: true
-
     game:
       url: jdbc:mysql://${DB_GAME_URL:localhost:3306}/game
       username: ${DB_GAME_USERNAME:root}
